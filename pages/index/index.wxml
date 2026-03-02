@@ -1,0 +1,154 @@
+<view class="container">
+  <!-- 顶部状态栏 -->
+  <view class="header-card card">
+    <view class="header-top">
+      <view class="date-info">
+        <text class="date-text">📅 {{todayDisplay}}</text>
+      </view>
+      <view class="star-badge" bindtap="goStars">
+        <text class="star-count">⭐ {{totalStars}}</text>
+      </view>
+    </view>
+    <view class="greeting" wx:if="{{dailyData}}">
+      <text wx:if="{{dailyData.checkedIn}}" class="greeting-done">✅ 今日已打卡！</text>
+      <text wx:elif="{{dailyData.tasks.length === 0}}" class="greeting-empty">还没有设置今天的任务哦</text>
+      <text wx:else class="greeting-todo">加油完成今天的作业吧！</text>
+    </view>
+  </view>
+
+  <!-- 今日任务列表 -->
+  <view class="card" wx:if="{{dailyData && dailyData.tasks.length > 0}}">
+    <view class="card-title">
+      <text>📋</text>
+      <text>今日任务</text>
+      <view class="task-progress">
+        <text class="progress-text">{{completedCount}}/{{totalCount}}</text>
+      </view>
+    </view>
+
+    <!-- 进度条 -->
+    <view class="progress-bar-wrap">
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{progressPercent}}%"></view>
+      </view>
+    </view>
+
+    <!-- 任务列表 -->
+    <view class="task-list">
+      <view
+        wx:for="{{dailyData.tasks}}"
+        wx:key="id"
+        class="task-item {{item.completed ? 'completed' : ''}}"
+      >
+        <view class="task-check" bindtap="onToggleTask" data-id="{{item.id}}">
+          <view class="checkbox {{item.completed ? 'checked' : ''}}">
+            <text wx:if="{{item.completed}}">✓</text>
+          </view>
+        </view>
+        <view class="task-title {{item.completed ? 'line-through' : ''}}">{{item.title}}</view>
+        <view class="task-delete" bindtap="onDeleteTask" data-id="{{item.id}}" wx:if="{{!dailyData.checkedIn}}">✕</view>
+      </view>
+    </view>
+
+    <!-- 添加任务 -->
+    <view wx:if="{{!dailyData.checkedIn}}">
+      <view class="add-task-btn" bindtap="showAddTask" wx:if="{{!showAddTask}}">
+        <text>+ 添加今日任务</text>
+      </view>
+      <view class="add-task-form" wx:if="{{showAddTask}}">
+        <input
+          class="task-input"
+          placeholder="输入任务名称"
+          value="{{newTaskName}}"
+          bindinput="onTaskNameInput"
+          confirm-type="done"
+          bindconfirm="addTask"
+        />
+        <view class="form-btns">
+          <button class="btn-small btn-confirm" bindtap="addTask">添加</button>
+          <button class="btn-small btn-cancel" bindtap="hideAddTask">取消</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="card" wx:if="{{dailyData && dailyData.tasks.length === 0}}">
+    <view class="empty-state">
+      <view class="icon">📝</view>
+      <text>今天还没有任务</text>
+      <view style="margin-top: 20rpx;">
+        <button class="btn-primary" bindtap="showAddTask">添加任务</button>
+      </view>
+      <view wx:if="{{showAddTask}}" class="add-task-form" style="margin-top: 30rpx;">
+        <input
+          class="task-input"
+          placeholder="输入任务名称"
+          value="{{newTaskName}}"
+          bindinput="onTaskNameInput"
+          confirm-type="done"
+          bindconfirm="addTask"
+        />
+        <view class="form-btns">
+          <button class="btn-small btn-confirm" bindtap="addTask">添加</button>
+          <button class="btn-small btn-cancel" bindtap="hideAddTask">取消</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 打卡按钮 -->
+  <view class="checkin-section" wx:if="{{dailyData && dailyData.tasks.length > 0 && !dailyData.checkedIn}}">
+    <button
+      class="checkin-btn {{allCompleted ? 'active' : 'disabled'}}"
+      bindtap="onCheckIn"
+      disabled="{{!allCompleted}}"
+    >
+      <text class="checkin-icon">🎯</text>
+      <text class="checkin-text">{{allCompleted ? '完成打卡' : '完成所有任务后打卡'}}</text>
+    </button>
+  </view>
+
+  <!-- 打卡后状态 -->
+  <view class="card" wx:if="{{dailyData && dailyData.checkedIn}}">
+    <view class="card-title">
+      <text>🏆</text>
+      <text>今日打卡记录</text>
+    </view>
+    <view class="checkin-info">
+      <view class="info-row">
+        <text class="info-label">打卡时间</text>
+        <text class="info-value">{{dailyData.checkedInTime}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">完成星星</text>
+        <view class="info-value">
+          <text wx:if="{{dailyData.starsEarned.completion}}">⭐</text>
+          <text wx:if="{{dailyData.starsEarned.timeBonus}}">⭐</text>
+          <text wx:if="{{dailyData.starsEarned.recommend}}">⭐</text>
+          <text wx:if="{{dailyData.starsEarned.parentReview > 0}}">⭐</text>
+          <text wx:if="{{dailyData.starsEarned.parentReview < 0}}" style="color: #F44336;">-⭐</text>
+        </view>
+      </view>
+      <view class="info-row" wx:if="{{dailyData.parentReviewed}}">
+        <text class="info-label">家长评价</text>
+        <text class="info-value {{dailyData.starsEarned.parentReview > 0 ? 'text-green' : (dailyData.starsEarned.parentReview < 0 ? 'text-red' : '')}}">
+          {{dailyData.starsEarned.parentReview > 0 ? '优秀 👍' : (dailyData.starsEarned.parentReview < 0 ? '待改进 💪' : '合格 ✅')}}
+        </text>
+      </view>
+      <view class="info-row" wx:if="{{!dailyData.parentReviewed}}">
+        <text class="info-label">家长评价</text>
+        <text class="info-value text-orange">等待家长检查</text>
+      </view>
+    </view>
+
+    <!-- 推荐阅读入口 -->
+    <view wx:if="{{dailyData.recommendShown && !dailyData.recommendCompleted}}" class="recommend-entry" bindtap="goRecommend">
+      <text>📚 去完成推荐阅读，再得1颗星 →</text>
+    </view>
+    <view wx:if="{{dailyData.recommendCompleted}}" class="recommend-done">
+      <text>📚 推荐阅读已完成 ✅</text>
+    </view>
+  </view>
+</view>
+

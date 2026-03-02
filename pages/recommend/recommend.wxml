@@ -1,0 +1,57 @@
+<view class="container">
+  <!-- 标题区域 -->
+  <view class="card header-card">
+    <view class="header-content">
+      <text class="header-emoji">📚</text>
+      <view class="header-text">
+        <text class="header-title">今日推荐</text>
+        <text class="header-desc">适合 {{settings.studentAge}} 岁的精选内容（约20分钟）</text>
+      </view>
+    </view>
+    <view class="header-tip">
+      <text>完成以下内容阅读可获得 1⭐</text>
+    </view>
+  </view>
+
+  <!-- 推荐内容列表 -->
+  <view wx:for="{{recommendations}}" wx:key="id" class="card recommend-card {{readStatus[item.id] ? 'read' : ''}}">
+    <view class="recommend-header">
+      <view class="type-badge {{item.type === 'book' ? 'book' : 'video'}}">
+        <text>{{item.type === 'book' ? '📖 电子书' : '🎬 视频'}}</text>
+      </view>
+      <text class="duration">⏱ {{item.duration}}</text>
+    </view>
+    <text class="recommend-title">{{item.title}}</text>
+    <text class="recommend-desc">{{item.desc}}</text>
+    <view class="recommend-action" bindtap="onMarkRead" data-id="{{item.id}}">
+      <view class="read-checkbox {{readStatus[item.id] ? 'checked' : ''}}">
+        <text wx:if="{{readStatus[item.id]}}">✓</text>
+      </view>
+      <text class="read-text">{{readStatus[item.id] ? '已阅读完成' : '点击标记已阅读'}}</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="card" wx:if="{{recommendations.length === 0}}">
+    <view class="empty-state">
+      <view class="icon">📚</view>
+      <text>暂无推荐内容</text>
+    </view>
+  </view>
+
+  <!-- 完成按钮 -->
+  <view class="complete-section" wx:if="{{recommendations.length > 0}}">
+    <button
+      class="complete-btn {{allRead ? 'active' : 'disabled'}}"
+      bindtap="onComplete"
+      disabled="{{!allRead}}"
+    >
+      <text>{{allRead ? '🌟 完成阅读，领取星星' : '请先完成所有推荐内容'}}</text>
+    </button>
+  </view>
+
+  <view class="back-link" bindtap="goBack">
+    <text>← 返回作业页</text>
+  </view>
+</view>
+

@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/stars/stars",
+    "pages/shop/shop",
+    "pages/parent/parent",
+    "pages/recommend/recommend"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#4F7CFF",
+    "navigationBarTitleText": "作业打卡",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F7FA",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#4F7CFF",
+    "backgroundColor": "#ffffff",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "作业" },
+      { "pagePath": "pages/stars/stars", "text": "星星" },
+      { "pagePath": "pages/shop/shop", "text": "商店" },
+      { "pagePath": "pages/parent/parent", "text": "家长" }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
+}
+

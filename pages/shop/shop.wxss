@@ -1,0 +1,166 @@
+/* 余额卡片 */
+.balance-card {
+  background: linear-gradient(135deg, #4F7CFF, #6B8FFF);
+  color: #fff;
+}
+
+.balance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.balance-label {
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+.balance-value {
+  font-size: 40rpx;
+  font-weight: 800;
+}
+
+/* 礼品列表 */
+.gift-list {
+  padding: 0;
+}
+
+.gift-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.gift-item:last-child {
+  border-bottom: none;
+}
+
+.gift-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 16rpx;
+  background: #FFF3E0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.gift-info {
+  flex: 1;
+}
+
+.gift-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.gift-meta {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.gift-price {
+  font-size: 26rpx;
+  color: #FF9800;
+  font-weight: 600;
+}
+
+.gift-stock {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.gift-stock.low-stock {
+  color: #F44336;
+}
+
+.redeem-btn {
+  padding: 12rpx 28rpx;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  border: none;
+  line-height: 1.5;
+  min-width: 120rpx;
+}
+
+.redeem-btn::after {
+  border: none;
+}
+
+.redeem-btn.can-redeem {
+  background: linear-gradient(135deg, #FF6B35, #FF8F60);
+  color: #fff;
+}
+
+.redeem-btn.cannot-redeem {
+  background: #F0F0F0;
+  color: #999;
+}
+
+/* 兑换记录 */
+.redemption-list {
+  padding: 0;
+}
+
+.redemption-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.redemption-item:last-child {
+  border-bottom: none;
+}
+
+.redemption-name {
+  font-size: 28rpx;
+  color: #333;
+  display: block;
+}
+
+.redemption-date {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+  display: block;
+}
+
+.redemption-status {
+  text-align: right;
+}
+
+.redemption-stars {
+  font-size: 26rpx;
+  color: #F44336;
+  display: block;
+}
+
+.status-tag {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  margin-top: 4rpx;
+  display: inline-block;
+}
+
+.status-tag.delivered {
+  background: #E8F5E9;
+  color: #4CAF50;
+}
+
+.status-tag.pending {
+  background: #FFF3E0;
+  color: #FF9800;
+}
+

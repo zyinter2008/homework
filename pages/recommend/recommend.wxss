@@ -1,0 +1,163 @@
+/* 头部 */
+.header-card {
+  background: linear-gradient(135deg, #7B1FA2, #9C27B0);
+  color: #fff;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.header-emoji {
+  font-size: 60rpx;
+  margin-right: 20rpx;
+}
+
+.header-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  display: block;
+}
+
+.header-desc {
+  font-size: 24rpx;
+  opacity: 0.85;
+  display: block;
+  margin-top: 4rpx;
+}
+
+.header-tip {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 12rpx 20rpx;
+  border-radius: 10rpx;
+  text-align: center;
+  font-size: 26rpx;
+}
+
+/* 推荐卡片 */
+.recommend-card {
+  transition: all 0.3s ease;
+  border-left: 6rpx solid #E0E0E0;
+}
+
+.recommend-card.read {
+  border-left-color: #4CAF50;
+  background: #FAFFF9;
+}
+
+.recommend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.type-badge {
+  padding: 6rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.type-badge.book {
+  background: #E3F2FD;
+  color: #1565C0;
+}
+
+.type-badge.video {
+  background: #FCE4EC;
+  color: #C62828;
+}
+
+.duration {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.recommend-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333;
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.recommend-desc {
+  font-size: 26rpx;
+  color: #666;
+  display: block;
+  margin-bottom: 20rpx;
+  line-height: 1.5;
+}
+
+.recommend-action {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 20rpx;
+  background: #F5F7FA;
+  border-radius: 12rpx;
+}
+
+.read-checkbox {
+  width: 40rpx;
+  height: 40rpx;
+  border: 3rpx solid #CCC;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  font-size: 22rpx;
+  color: #fff;
+  transition: all 0.2s;
+}
+
+.read-checkbox.checked {
+  background: #4CAF50;
+  border-color: #4CAF50;
+}
+
+.read-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+/* 完成按钮 */
+.complete-section {
+  margin: 30rpx 0;
+}
+
+.complete-btn {
+  padding: 28rpx;
+  border-radius: 60rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  text-align: center;
+  border: none;
+}
+
+.complete-btn::after {
+  border: none;
+}
+
+.complete-btn.active {
+  background: linear-gradient(135deg, #FF6B35, #FF8F60);
+  color: #fff;
+  box-shadow: 0 8rpx 30rpx rgba(255, 107, 53, 0.4);
+}
+
+.complete-btn.disabled {
+  background: #E0E0E0;
+  color: #999;
+}
+
+/* 返回链接 */
+.back-link {
+  text-align: center;
+  padding: 20rpx;
+  color: #4F7CFF;
+  font-size: 28rpx;
+}
+

@@ -1,0 +1,255 @@
+<view class="container">
+  <!-- 密码验证 -->
+  <view class="card lock-card" wx:if="{{!isUnlocked}}">
+    <view class="lock-icon">🔒</view>
+    <text class="lock-title">家长中心</text>
+    <text class="lock-desc">请输入家长密码（默认1234）</text>
+    <input
+      class="pin-input"
+      type="number"
+      password="{{true}}"
+      maxlength="6"
+      placeholder="输入密码"
+      value="{{pinInput}}"
+      bindinput="onPinInput"
+      bindconfirm="onUnlock"
+    />
+    <button class="btn-primary" bindtap="onUnlock" style="margin-top: 24rpx;">验证</button>
+  </view>
+
+  <!-- 已解锁内容 -->
+  <view wx:if="{{isUnlocked}}">
+    <!-- 功能导航 -->
+    <view class="nav-tabs">
+      <view
+        class="nav-tab {{activeSection === 'review' ? 'active' : ''}}"
+        bindtap="switchSection" data-section="review"
+      >✅ 评价</view>
+      <view
+        class="nav-tab {{activeSection === 'tasks' ? 'active' : ''}}"
+        bindtap="switchSection" data-section="tasks"
+      >📋 任务</view>
+      <view
+        class="nav-tab {{activeSection === 'gifts' ? 'active' : ''}}"
+        bindtap="switchSection" data-section="gifts"
+      >🎁 礼品</view>
+      <view
+        class="nav-tab {{activeSection === 'redemptions' ? 'active' : ''}}"
+        bindtap="switchSection" data-section="redemptions"
+      >📦 交付</view>
+      <view
+        class="nav-tab {{activeSection === 'settings' ? 'active' : ''}}"
+        bindtap="switchSection" data-section="settings"
+      >⚙️ 设置</view>
+    </view>
+
+    <!-- ===== 作业评价 ===== -->
+    <view wx:if="{{activeSection === 'review'}}">
+      <view class="card">
+        <view class="card-title">
+          <text>✅</text>
+          <text>作业质量评价</text>
+        </view>
+        <text class="section-desc">{{todayDisplay}} 作业完成情况</text>
+
+        <view wx:if="{{dailyData && dailyData.checkedIn}}">
+          <view class="review-tasks">
+            <view wx:for="{{dailyData.tasks}}" wx:key="id" class="review-task-item">
+              <text>{{item.completed ? '✅' : '❌'}} {{item.title}}</text>
+            </view>
+          </view>
+          <view class="divider"></view>
+          <view class="review-info">
+            <text>打卡时间：{{dailyData.checkedInTime}}</text>
+          </view>
+
+          <view class="review-actions" wx:if="{{!dailyData.parentReviewed}}">
+            <text class="review-prompt">请评价作业完成质量：</text>
+            <view class="review-btns">
+              <button class="review-btn good" bindtap="onReview" data-rating="1">
+                👍 优秀 +1⭐
+              </button>
+              <button class="review-btn ok" bindtap="onReview" data-rating="0">
+                ✅ 合格
+              </button>
+              <button class="review-btn bad" bindtap="onReview" data-rating="-1">
+                💪 待改进 -1⭐
+              </button>
+            </view>
+          </view>
+
+          <view class="review-result" wx:if="{{dailyData.parentReviewed}}">
+            <text class="reviewed-label">已评价：</text>
+            <text class="reviewed-value {{dailyData.starsEarned.parentReview > 0 ? 'good' : (dailyData.starsEarned.parentReview < 0 ? 'bad' : 'ok')}}">
+              {{dailyData.starsEarned.parentReview > 0 ? '优秀 👍 +1⭐' : (dailyData.starsEarned.parentReview < 0 ? '待改进 💪 -1⭐' : '合格 ✅')}}
+            </text>
+            <text class="re-review-tip">再次点击评价按钮可修改</text>
+            <view class="review-btns" style="margin-top: 16rpx;">
+              <button class="review-btn good small" bindtap="onReview" data-rating="1">👍</button>
+              <button class="review-btn ok small" bindtap="onReview" data-rating="0">✅</button>
+              <button class="review-btn bad small" bindtap="onReview" data-rating="-1">💪</button>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{!dailyData || !dailyData.checkedIn}}" class="empty-state">
+          <view class="icon">📝</view>
+          <text>学生今天还没有打卡</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 预设任务管理 ===== -->
+    <view wx:if="{{activeSection === 'tasks'}}">
+      <view class="card">
+        <view class="card-title">
+          <text>📋</text>
+          <text>预设任务模板</text>
+        </view>
+        <text class="section-desc">预设每日固定作业，可在此基础上临时增减</text>
+
+        <view class="preset-list">
+          <view wx:for="{{presetTasks}}" wx:key="index" class="preset-item">
+            <text class="preset-name">{{item}}</text>
+            <view class="preset-delete" bindtap="deletePresetTask" data-index="{{index}}">✕</view>
+          </view>
+        </view>
+
+        <view class="add-preset-form">
+          <input
+            class="task-input"
+            placeholder="输入任务名称（如：数学作业）"
+            value="{{newPresetTask}}"
+            bindinput="onPresetTaskInput"
+            confirm-type="done"
+            bindconfirm="addPresetTask"
+          />
+          <button class="btn-small btn-confirm" bindtap="addPresetTask" style="margin-top: 16rpx;">添加预设任务</button>
+        </view>
+
+        <view class="divider"></view>
+
+        <button class="btn-primary" bindtap="applyPresetToToday" style="width: 100%;">
+          📥 将预设任务设为今日作业
+        </button>
+      </view>
+    </view>
+
+    <!-- ===== 礼品管理 ===== -->
+    <view wx:if="{{activeSection === 'gifts'}}">
+      <view class="card">
+        <view class="card-title">
+          <text>🎁</text>
+          <text>礼品管理</text>
+        </view>
+
+        <view class="gift-manage-list">
+          <view wx:for="{{gifts}}" wx:key="id" class="gift-manage-item">
+            <view class="gift-manage-info">
+              <text class="gift-manage-name">{{item.name}}</text>
+              <text class="gift-manage-detail">{{item.stars}}⭐ · 库存{{item.stock}}</text>
+            </view>
+            <view class="gift-manage-actions">
+              <view class="action-btn edit" bindtap="editGift" data-id="{{item.id}}">编辑</view>
+              <view class="action-btn delete" bindtap="deleteGift" data-id="{{item.id}}">删除</view>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{gifts.length === 0}}" class="empty-state">
+          <text>还没有设置礼品</text>
+        </view>
+
+        <!-- 添加/编辑礼品表单 -->
+        <view class="divider"></view>
+        <view class="add-gift-toggle" bindtap="toggleAddGift">
+          <text>{{showAddGift ? '收起' : (editingGiftId ? '编辑礼品' : '+ 添加礼品')}}</text>
+        </view>
+
+        <view wx:if="{{showAddGift}}" class="gift-form">
+          <view class="form-item">
+            <text class="form-label">礼品名称</text>
+            <input class="form-input" placeholder="如：小玩具" value="{{newGift.name}}" bindinput="onGiftNameInput" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">所需星星</text>
+            <input class="form-input" type="number" placeholder="如：10" value="{{newGift.stars}}" bindinput="onGiftStarsInput" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">库存数量</text>
+            <input class="form-input" type="number" placeholder="如：5" value="{{newGift.stock}}" bindinput="onGiftStockInput" />
+          </view>
+          <button class="btn-primary" bindtap="saveGift" style="margin-top: 20rpx; width: 100%;">
+            {{editingGiftId ? '保存修改' : '添加礼品'}}
+          </button>
+        </view>
+
+        <!-- 库存预警 -->
+        <view wx:for="{{gifts}}" wx:key="id">
+          <view wx:if="{{item.stock <= 2 && item.stock > 0}}" class="stock-warning">
+            ⚠️ "{{item.name}}" 库存仅剩 {{item.stock}} 件，建议补充
+          </view>
+          <view wx:if="{{item.stock === 0}}" class="stock-danger">
+            🚫 "{{item.name}}" 已无库存，请及时购买补充
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 兑换交付 ===== -->
+    <view wx:if="{{activeSection === 'redemptions'}}">
+      <view class="card">
+        <view class="card-title">
+          <text>📦</text>
+          <text>礼品交付</text>
+        </view>
+        <text class="section-desc">学生兑换的礼品，确认交付实物后点击"交付"</text>
+
+        <view wx:if="{{redemptions.length > 0}}">
+          <view wx:for="{{redemptions}}" wx:key="id" class="deliver-item">
+            <view class="deliver-info">
+              <text class="deliver-name">{{item.giftName}}</text>
+              <text class="deliver-detail">{{item.date}} {{item.time}} · {{item.stars}}⭐</text>
+            </view>
+            <button
+              wx:if="{{!item.delivered}}"
+              class="deliver-btn"
+              bindtap="onDeliver"
+              data-id="{{item.id}}"
+            >交付</button>
+            <text wx:if="{{item.delivered}}" class="delivered-tag">✅ 已交付</text>
+          </view>
+        </view>
+
+        <view wx:if="{{redemptions.length === 0}}" class="empty-state">
+          <view class="icon">📦</view>
+          <text>暂无兑换记录</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 设置 ===== -->
+    <view wx:if="{{activeSection === 'settings'}}">
+      <view class="card">
+        <view class="card-title">
+          <text>⚙️</text>
+          <text>基本设置</text>
+        </view>
+        <view class="form-item">
+          <text class="form-label">学生姓名</text>
+          <input class="form-input" placeholder="输入学生姓名" value="{{settings.studentName}}" bindinput="onNameInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">学生年龄</text>
+          <input class="form-input" type="number" placeholder="输入年龄" value="{{settings.studentAge}}" bindinput="onAgeInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">家长密码</text>
+          <input class="form-input" type="number" password="{{true}}" maxlength="6" placeholder="设置密码" value="{{settings.parentPin}}" bindinput="onPinChange" />
+        </view>
+        <button class="btn-primary" bindtap="saveSettings" style="margin-top: 30rpx; width: 100%;">保存设置</button>
+      </view>
+    </view>
+  </view>
+</view>
+

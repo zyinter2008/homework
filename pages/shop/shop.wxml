@@ -1,0 +1,69 @@
+<view class="container">
+  <!-- 星星余额 -->
+  <view class="balance-card card">
+    <view class="balance-row">
+      <text class="balance-label">我的星星</text>
+      <text class="balance-value">⭐ {{totalStars}}</text>
+    </view>
+  </view>
+
+  <!-- 礼品列表 -->
+  <view class="card">
+    <view class="card-title">
+      <text>🎁</text>
+      <text>可兑换礼品</text>
+    </view>
+
+    <view class="gift-list" wx:if="{{gifts.length > 0}}">
+      <view wx:for="{{gifts}}" wx:key="id" class="gift-item">
+        <view class="gift-icon">
+          <text>🎁</text>
+        </view>
+        <view class="gift-info">
+          <text class="gift-name">{{item.name}}</text>
+          <view class="gift-meta">
+            <text class="gift-price">{{item.stars}} ⭐</text>
+            <text class="gift-stock {{item.stock <= 2 ? 'low-stock' : ''}}">库存 {{item.stock}}</text>
+          </view>
+        </view>
+        <button
+          class="redeem-btn {{totalStars >= item.stars ? 'can-redeem' : 'cannot-redeem'}}"
+          bindtap="onRedeem"
+          data-id="{{item.id}}"
+          disabled="{{totalStars < item.stars}}"
+        >
+          {{totalStars >= item.stars ? '兑换' : '不够'}}
+        </button>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:if="{{gifts.length === 0}}">
+      <view class="icon">🎁</view>
+      <text>暂时没有礼品</text>
+      <text style="font-size: 24rpx; color: #bbb; margin-top: 8rpx;">请让家长在家长中心设置礼品</text>
+    </view>
+  </view>
+
+  <!-- 兑换记录 -->
+  <view class="card" wx:if="{{redemptions.length > 0}}">
+    <view class="card-title">
+      <text>📋</text>
+      <text>兑换记录</text>
+    </view>
+    <view class="redemption-list">
+      <view wx:for="{{redemptions}}" wx:key="id" class="redemption-item">
+        <view class="redemption-info">
+          <text class="redemption-name">{{item.giftName}}</text>
+          <text class="redemption-date">{{item.date}} {{item.time}}</text>
+        </view>
+        <view class="redemption-status">
+          <text class="redemption-stars">-{{item.stars}}⭐</text>
+          <text class="status-tag {{item.delivered ? 'delivered' : 'pending'}}">
+            {{item.delivered ? '已领取' : '待领取'}}
+          </text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+

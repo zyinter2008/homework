@@ -1,0 +1,78 @@
+<view class="container">
+  <!-- 星星总览 -->
+  <view class="star-overview card">
+    <view class="star-big">
+      <text class="star-emoji">⭐</text>
+      <text class="star-total">{{totalStars}}</text>
+    </view>
+    <text class="star-label">累计星星</text>
+    <view class="today-earned" wx:if="{{todayEarned !== 0}}">
+      <text>今日 {{todayEarned > 0 ? '+' : ''}}{{todayEarned}} ⭐</text>
+    </view>
+  </view>
+
+  <!-- 星星规则说明 -->
+  <view class="card rules-card">
+    <view class="card-title">
+      <text>📖</text>
+      <text>获星规则</text>
+    </view>
+    <view class="rule-list">
+      <view class="rule-item">
+        <text class="rule-icon">✅</text>
+        <text class="rule-text">完成当天所有作业并打卡</text>
+        <text class="rule-stars">+1⭐</text>
+      </view>
+      <view class="rule-item">
+        <text class="rule-icon">⏰</text>
+        <text class="rule-text">晚上8:30前完成打卡</text>
+        <text class="rule-stars">+1⭐</text>
+      </view>
+      <view class="rule-item">
+        <text class="rule-icon">📚</text>
+        <text class="rule-text">完成推荐阅读/视频</text>
+        <text class="rule-stars">+1⭐</text>
+      </view>
+      <view class="rule-item">
+        <text class="rule-icon">👨‍👩‍👧</text>
+        <text class="rule-text">家长评价完成质量</text>
+        <text class="rule-stars">±1⭐</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="card" wx:if="{{history.length > 0}}">
+    <view class="card-title">
+      <text>📊</text>
+      <text>星星记录</text>
+    </view>
+    <view class="history-list">
+      <view wx:for="{{history}}" wx:key="date" class="history-group">
+        <view class="history-date">
+          <text>{{item.dateDisplay}}</text>
+          <text class="history-total {{item.total >= 0 ? 'positive' : 'negative'}}">
+            {{item.total > 0 ? '+' : ''}}{{item.total}}⭐
+          </text>
+        </view>
+        <view wx:for="{{item.items}}" wx:for-item="record" wx:key="time" class="history-item">
+          <text class="record-time">{{record.time}}</text>
+          <text class="record-reason">{{record.reason}}</text>
+          <text class="record-amount {{record.amount > 0 ? 'positive' : 'negative'}}">
+            {{record.amount > 0 ? '+' : ''}}{{record.amount}}
+          </text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="card" wx:if="{{history.length === 0}}">
+    <view class="empty-state">
+      <view class="icon">🌟</view>
+      <text>还没有星星记录</text>
+      <text style="font-size: 24rpx; color: #bbb; margin-top: 8rpx;">完成作业打卡就能获得星星哦！</text>
+    </view>
+  </view>
+</view>
+

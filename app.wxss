@@ -1,0 +1,139 @@
+/* 全局样式 */
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background-color: #F5F7FA;
+  color: #333333;
+  font-size: 28rpx;
+  box-sizing: border-box;
+  padding-bottom: 120rpx;
+}
+
+.container {
+  padding: 20rpx 30rpx;
+}
+
+/* 卡片样式 */
+.card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+}
+
+.card-title text {
+  margin-right: 12rpx;
+}
+
+/* 按钮通用样式 */
+.btn-primary {
+  background: linear-gradient(135deg, #4F7CFF, #6B8FFF);
+  color: #ffffff;
+  border-radius: 48rpx;
+  padding: 20rpx 48rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  box-shadow: 0 6rpx 20rpx rgba(79, 124, 255, 0.3);
+}
+
+.btn-primary::after {
+  border: none;
+}
+
+.btn-primary[disabled] {
+  background: #cccccc;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #4F7CFF;
+  border: 2rpx solid #4F7CFF;
+  border-radius: 48rpx;
+  padding: 18rpx 40rpx;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #FF5252, #FF7B7B);
+  color: #ffffff;
+  border-radius: 48rpx;
+  padding: 20rpx 48rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  color: #ffffff;
+  border-radius: 48rpx;
+  padding: 20rpx 48rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.empty-state .icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+/* 分割线 */
+.divider {
+  height: 1rpx;
+  background: #EEEEEE;
+  margin: 20rpx 0;
+}
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  margin-right: 10rpx;
+}
+
+.tag-blue {
+  background: #E8F0FE;
+  color: #4F7CFF;
+}
+
+.tag-green {
+  background: #E8F5E9;
+  color: #4CAF50;
+}
+
+.tag-orange {
+  background: #FFF3E0;
+  color: #FF9800;
+}
+
+.tag-red {
+  background: #FFEBEE;
+  color: #F44336;
+}
+
