@@ -4,7 +4,7 @@ Page({
   data: {
     isUnlocked: false,
     pinInput: '',
-    activeSection: 'review', // review | tasks | gifts | redemptions | settings
+    activeSection: 'review', // review | tasks | gifts | redemptions | content | settings
     // 评价相关
     today: '',
     todayDisplay: '',
@@ -19,6 +19,10 @@ Page({
     editingGiftId: null,
     // 兑换管理
     redemptions: [],
+    // 内容管理
+    customRecommendations: [],
+    showAddContent: false,
+    newContent: { title: '', type: 'book', ageMin: '6', ageMax: '8', desc: '', content: '', videoUrl: '', duration: '20分钟' },
     // 设置
     settings: {}
   },
@@ -39,6 +43,7 @@ Page({
       presetTasks: util.getPresetTasks(),
       gifts: util.getGifts(),
       redemptions: util.getRedemptions(),
+      customRecommendations: util.getCustomRecommendations(),
       settings: util.getSettings()
     });
   },
@@ -240,6 +245,104 @@ Page({
         }
       }
     });
+  },
+
+  // ========== 内容管理 ==========
+  toggleAddContent() {
+    this.setData({
+      showAddContent: !this.data.showAddContent,
+      newContent: { title: '', type: 'book', ageMin: '6', ageMax: '8', desc: '', content: '', videoUrl: '', duration: '20分钟' }
+    });
+  },
+
+  onContentTitleInput(e) {
+    this.setData({ 'newContent.title': e.detail.value });
+  },
+
+  onContentTypeChange(e) {
+    const types = ['book', 'video'];
+    this.setData({ 'newContent.type': types[e.detail.value] });
+  },
+
+  onContentAgeMinInput(e) {
+    this.setData({ 'newContent.ageMin': e.detail.value });
+  },
+
+  onContentAgeMaxInput(e) {
+    this.setData({ 'newContent.ageMax': e.detail.value });
+  },
+
+  onContentDescInput(e) {
+    this.setData({ 'newContent.desc': e.detail.value });
+  },
+
+  onContentBodyInput(e) {
+    this.setData({ 'newContent.content': e.detail.value });
+  },
+
+  onContentVideoUrlInput(e) {
+    this.setData({ 'newContent.videoUrl': e.detail.value });
+  },
+
+  onContentDurationInput(e) {
+    this.setData({ 'newContent.duration': e.detail.value });
+  },
+
+  saveContent() {
+    const c = this.data.newContent;
+    if (!c.title.trim()) {
+      wx.showToast({ title: '请输入标题', icon: 'none' });
+      return;
+    }
+    if (c.type === 'book' && !c.content.trim()) {
+      wx.showToast({ title: '请输入阅读内容', icon: 'none' });
+      return;
+    }
+    if (c.type === 'video' && !c.videoUrl.trim()) {
+      wx.showToast({ title: '请输入视频链接', icon: 'none' });
+      return;
+    }
+
+    util.addCustomRecommendation({
+      title: c.title.trim(),
+      type: c.type,
+      ageMin: Number(c.ageMin) || 6,
+      ageMax: Number(c.ageMax) || 12,
+      desc: c.desc.trim() || c.title.trim(),
+      content: c.type === 'book' ? c.content : '',
+      videoUrl: c.type === 'video' ? c.videoUrl.trim() : '',
+      duration: c.duration || '20分钟'
+    });
+
+    util.clearTodayRecommendCache();
+
+    this.setData({
+      showAddContent: false,
+      newContent: { title: '', type: 'book', ageMin: '6', ageMax: '8', desc: '', content: '', videoUrl: '', duration: '20分钟' }
+    });
+    this.refreshData();
+    wx.showToast({ title: '已添加', icon: 'success' });
+  },
+
+  deleteContent(e) {
+    const id = e.currentTarget.dataset.id;
+    wx.showModal({
+      title: '确认删除',
+      content: '确定删除这条推荐内容吗？',
+      success: (res) => {
+        if (res.confirm) {
+          util.deleteCustomRecommendation(id);
+          util.clearTodayRecommendCache();
+          this.refreshData();
+          wx.showToast({ title: '已删除', icon: 'success' });
+        }
+      }
+    });
+  },
+
+  previewContent(e) {
+    const id = e.currentTarget.dataset.id;
+    wx.navigateTo({ url: `/pages/content/content?id=${id}` });
   },
 
   // ========== 设置 ==========

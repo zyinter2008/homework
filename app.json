@@ -4,7 +4,8 @@
     "pages/stars/stars",
     "pages/shop/shop",
     "pages/parent/parent",
-    "pages/recommend/recommend"
+    "pages/recommend/recommend",
+    "pages/content/content"
   ],
   "window": {
     "navigationBarBackgroundColor": "#4F7CFF",

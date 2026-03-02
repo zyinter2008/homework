@@ -38,6 +38,10 @@
         bindtap="switchSection" data-section="redemptions"
       >📦 交付</view>
       <view
+        class="nav-tab {{activeSection === 'content' ? 'active' : ''}}"
+        bindtap="switchSection" data-section="content"
+      >📚 内容</view>
+      <view
         class="nav-tab {{activeSection === 'settings' ? 'active' : ''}}"
         bindtap="switchSection" data-section="settings"
       >⚙️ 设置</view>
@@ -224,6 +228,106 @@
         <view wx:if="{{redemptions.length === 0}}" class="empty-state">
           <view class="icon">📦</view>
           <text>暂无兑换记录</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 推荐内容管理 ===== -->
+    <view wx:if="{{activeSection === 'content'}}">
+      <view class="card">
+        <view class="card-title">
+          <text>📚</text>
+          <text>推荐内容管理</text>
+        </view>
+        <text class="section-desc">系统内置了各年龄段的电子书和视频推荐。你可以添加自定义内容，如自己上传的视频链接或撰写的文章。</text>
+
+        <!-- 自定义内容列表 -->
+        <view wx:if="{{customRecommendations.length > 0}}">
+          <text class="sub-title">自定义内容</text>
+          <view wx:for="{{customRecommendations}}" wx:key="id" class="content-item">
+            <view class="content-item-info">
+              <text class="content-item-name">{{item.type === 'book' ? '📖' : '🎬'}} {{item.title}}</text>
+              <text class="content-item-detail">{{item.ageMin}}-{{item.ageMax}}岁 · {{item.duration}}</text>
+            </view>
+            <view class="gift-manage-actions">
+              <view class="action-btn edit" bindtap="previewContent" data-id="{{item.id}}">预览</view>
+              <view class="action-btn delete" bindtap="deleteContent" data-id="{{item.id}}">删除</view>
+            </view>
+          </view>
+        </view>
+
+        <view class="divider"></view>
+
+        <!-- 添加自定义内容 -->
+        <view class="add-gift-toggle" bindtap="toggleAddContent">
+          <text>{{showAddContent ? '收起' : '+ 添加自定义内容'}}</text>
+        </view>
+
+        <view wx:if="{{showAddContent}}" class="gift-form">
+          <view class="form-item">
+            <text class="form-label">内容类型</text>
+            <picker bindchange="onContentTypeChange" range="{{['📖 电子书', '🎬 视频']}}">
+              <view class="form-picker">{{newContent.type === 'book' ? '📖 电子书' : '🎬 视频'}}</view>
+            </picker>
+          </view>
+          <view class="form-item">
+            <text class="form-label">标题</text>
+            <input class="form-input" placeholder="如：《有趣的数学》" value="{{newContent.title}}" bindinput="onContentTitleInput" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">简介</text>
+            <input class="form-input" placeholder="一句话描述" value="{{newContent.desc}}" bindinput="onContentDescInput" />
+          </view>
+          <view class="form-item-row">
+            <view class="form-item half">
+              <text class="form-label">最小年龄</text>
+              <input class="form-input" type="number" placeholder="6" value="{{newContent.ageMin}}" bindinput="onContentAgeMinInput" />
+            </view>
+            <view class="form-item half">
+              <text class="form-label">最大年龄</text>
+              <input class="form-input" type="number" placeholder="8" value="{{newContent.ageMax}}" bindinput="onContentAgeMaxInput" />
+            </view>
+          </view>
+          <view class="form-item">
+            <text class="form-label">时长</text>
+            <input class="form-input" placeholder="如：20分钟" value="{{newContent.duration}}" bindinput="onContentDurationInput" />
+          </view>
+
+          <!-- 电子书：输入正文内容 -->
+          <view wx:if="{{newContent.type === 'book'}}" class="form-item">
+            <text class="form-label">阅读内容（正文）</text>
+            <textarea
+              class="form-textarea"
+              placeholder="输入文章正文，用换行分段"
+              value="{{newContent.content}}"
+              bindinput="onContentBodyInput"
+              auto-height
+              maxlength="-1"
+            />
+          </view>
+
+          <!-- 视频：输入视频链接 -->
+          <view wx:if="{{newContent.type === 'video'}}" class="form-item">
+            <text class="form-label">视频链接（mp4格式）</text>
+            <input class="form-input" placeholder="https://..." value="{{newContent.videoUrl}}" bindinput="onContentVideoUrlInput" />
+            <text class="form-hint">支持 mp4 格式视频直链，可使用腾讯云COS、阿里云OSS等存储服务</text>
+          </view>
+
+          <button class="btn-primary" bindtap="saveContent" style="margin-top: 20rpx; width: 100%;">添加内容</button>
+        </view>
+      </view>
+
+      <!-- 使用说明 -->
+      <view class="card tips-card">
+        <view class="card-title">
+          <text>💡</text>
+          <text>使用说明</text>
+        </view>
+        <view class="tip-list">
+          <text class="tip-item">📖 电子书：直接在输入框中输入文章正文，孩子可在小程序内阅读</text>
+          <text class="tip-item">🎬 视频：填入 mp4 视频直链，孩子可在小程序内直接播放观看</text>
+          <text class="tip-item">🔗 视频链接获取：可将视频上传到腾讯云COS、阿里云OSS等云存储，获取直链地址</text>
+          <text class="tip-item">🔄 添加或删除内容后，今日推荐会自动刷新</text>
         </view>
       </view>
     </view>

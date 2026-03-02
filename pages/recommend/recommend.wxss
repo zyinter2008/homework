@@ -92,36 +92,59 @@
   line-height: 1.5;
 }
 
+/* 操作区域 - 进入阅读/观看 */
 .recommend-action {
   display: flex;
   align-items: center;
-  padding: 16rpx 20rpx;
-  background: #F5F7FA;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  background: linear-gradient(135deg, #E8F0FE, #F0F4FF);
+  border-radius: 12rpx;
+  border: 2rpx solid #D0DCFF;
+}
+
+.action-text {
+  font-size: 28rpx;
+  color: #4F7CFF;
+  font-weight: 600;
+}
+
+.action-arrow {
+  font-size: 32rpx;
+  color: #4F7CFF;
+  font-weight: 700;
+}
+
+/* 已完成状态 */
+.recommend-done {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  background: #E8F5E9;
   border-radius: 12rpx;
 }
 
-.read-checkbox {
-  width: 40rpx;
-  height: 40rpx;
-  border: 3rpx solid #CCC;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16rpx;
-  font-size: 22rpx;
-  color: #fff;
-  transition: all 0.2s;
+.done-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
 }
 
-.read-checkbox.checked {
-  background: #4CAF50;
-  border-color: #4CAF50;
+.done-text {
+  font-size: 28rpx;
+  color: #2E7D32;
+  font-weight: 600;
+  flex: 1;
 }
 
-.read-text {
-  font-size: 26rpx;
-  color: #666;
+.redo-link {
+  padding: 6rpx 16rpx;
+  background: rgba(46, 125, 50, 0.1);
+  border-radius: 16rpx;
+}
+
+.redo-link text {
+  font-size: 24rpx;
+  color: #2E7D32;
 }
 
 /* 完成按钮 */
@@ -160,4 +183,3 @@
   color: #4F7CFF;
   font-size: 28rpx;
 }
-

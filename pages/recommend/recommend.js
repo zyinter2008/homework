@@ -6,11 +6,19 @@ Page({
     dailyData: null,
     settings: {},
     allRead: false,
-    readStatus: {} // { id: true/false }
+    readStatus: {}
   },
 
   onLoad() {
     this.loadData();
+  },
+
+  onShow() {
+    // 刷新阅读状态（从内容页返回后）
+    if (this.data.recommendations.length > 0) {
+      const allRead = this.data.recommendations.every(r => this.data.readStatus[r.id]);
+      this.setData({ allRead });
+    }
   },
 
   loadData() {
@@ -19,7 +27,6 @@ Page({
     const settings = util.getSettings();
     const recommendations = util.getTodayRecommendations();
 
-    // 初始化阅读状态
     const readStatus = {};
     recommendations.forEach(r => {
       readStatus[r.id] = false;
@@ -34,19 +41,23 @@ Page({
     });
   },
 
-  // 标记已阅读
-  onMarkRead(e) {
+  // 点击进入阅读/观看
+  onViewContent(e) {
     const id = e.currentTarget.dataset.id;
+    wx.navigateTo({
+      url: `/pages/content/content?id=${id}`
+    });
+  },
+
+  // 从内容页返回时标记已读
+  onContentDone(id) {
     const readStatus = this.data.readStatus;
-    readStatus[id] = !readStatus[id];
-
-    // 检查是否全部已读
+    readStatus[id] = true;
     const allRead = this.data.recommendations.every(r => readStatus[r.id]);
-
     this.setData({ readStatus, allRead });
   },
 
-  // 完成推荐，获得星星
+  // 完成全部推荐，获得星星
   onComplete() {
     if (!this.data.allRead) {
       wx.showToast({ title: '请先完成所有推荐内容', icon: 'none' });
@@ -56,8 +67,8 @@ Page({
     const result = util.completeRecommendation();
     if (result) {
       wx.showModal({
-        title: '🎉 太棒了！',
-        content: '完成推荐阅读，获得1颗星！⭐\n\n继续保持，明天也要加油哦！',
+        title: '太棒了！',
+        content: '完成推荐阅读，获得1颗星！\n\n继续保持，明天也要加油哦！',
         showCancel: false,
         confirmText: '好的',
         success: () => {
@@ -69,9 +80,7 @@ Page({
     }
   },
 
-  // 返回
   goBack() {
     wx.navigateBack();
   }
 });
-

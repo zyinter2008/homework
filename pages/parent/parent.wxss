@@ -365,3 +365,94 @@
   flex-shrink: 0;
 }
 
+/* 内容管理 */
+.sub-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin: 16rpx 0 12rpx;
+}
+
+.content-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.content-item:last-child {
+  border-bottom: none;
+}
+
+.content-item-name {
+  font-size: 28rpx;
+  color: #333;
+  display: block;
+}
+
+.content-item-detail {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+  display: block;
+}
+
+.form-picker {
+  border: 2rpx solid #E0E0E0;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  font-size: 28rpx;
+  background: #F9F9F9;
+  color: #333;
+}
+
+.form-textarea {
+  border: 2rpx solid #E0E0E0;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  font-size: 28rpx;
+  background: #F9F9F9;
+  width: 100%;
+  min-height: 240rpx;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+.form-hint {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 8rpx;
+  display: block;
+  line-height: 1.5;
+}
+
+.form-item-row {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.form-item.half {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* 使用说明 */
+.tips-card {
+  background: #FFFDE7;
+}
+
+.tip-list {
+  padding: 0;
+}
+
+.tip-item {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.7;
+  padding: 6rpx 0;
+}
+
