@@ -5,14 +5,21 @@ Page({
     item: null,
     isBook: false,
     isVideo: false,
-    hasVideoUrl: false,
+    // 视频链接类型：mp4 / bilibili / link / none
+    videoLinkType: 'none',
+    // 拼音相关
+    hasPinyin: false,
+    pinyinParagraphs: [],
+    // 普通文本段落
     paragraphs: [],
-    readTimer: null,
+    // 阅读计时
     readSeconds: 0,
     readMinutes: 0,
     readDone: false,
     minReadSeconds: 30
   },
+
+  _timer: null,
 
   onLoad(options) {
     const id = Number(options.id);
@@ -25,55 +32,77 @@ Page({
 
     const isBook = item.type === 'book';
     const isVideo = item.type === 'video';
-    const hasVideoUrl = isVideo && item.videoUrl && item.videoUrl.trim() !== '';
+    const videoLinkType = isVideo ? util.detectVideoLinkType(item.videoUrl) : 'none';
+    const hasPinyin = isBook && item.hasPinyin && item.pinyinContent;
+
+    let pinyinParagraphs = [];
     let paragraphs = [];
-    if (isBook && item.content) {
-      paragraphs = item.content.split('\n').map(p => p.trim());
+
+    if (isBook) {
+      if (hasPinyin) {
+        pinyinParagraphs = util.parsePinyinText(item.pinyinContent);
+      }
+      // 普通文本作为后备
+      if (item.content) {
+        paragraphs = item.content.split('\n').map(p => p.trim());
+      }
     }
 
-    this.setData({ item, isBook, isVideo, hasVideoUrl, paragraphs });
+    this.setData({
+      item, isBook, isVideo, videoLinkType,
+      hasPinyin, pinyinParagraphs, paragraphs
+    });
 
     wx.setNavigationBarTitle({
       title: isBook ? '📖 阅读' : '🎬 观看'
     });
 
-    this.startReadTimer();
+    this.startTimer();
   },
 
   onUnload() {
-    this.stopReadTimer();
+    this.stopTimer();
   },
 
-  startReadTimer() {
-    const timer = setInterval(() => {
-      const seconds = this.data.readSeconds + 1;
-      const readDone = seconds >= this.data.minReadSeconds;
+  startTimer() {
+    this._timer = setInterval(() => {
+      const s = this.data.readSeconds + 1;
       this.setData({
-        readSeconds: seconds,
-        readMinutes: Math.floor(seconds / 60),
-        readDone: readDone
+        readSeconds: s,
+        readMinutes: Math.floor(s / 60),
+        readDone: s >= this.data.minReadSeconds
       });
     }, 1000);
-    this.setData({ readTimer: timer });
   },
 
-  stopReadTimer() {
-    if (this.data.readTimer) {
-      clearInterval(this.data.readTimer);
-    }
+  stopTimer() {
+    if (this._timer) clearInterval(this._timer);
   },
 
   onVideoEnded() {
     this.setData({ readDone: true });
   },
 
+  // 复制链接到剪贴板
+  onCopyLink() {
+    const url = this.data.item.videoUrl;
+    wx.setClipboardData({
+      data: url,
+      success: () => {
+        wx.showToast({ title: '链接已复制', icon: 'success' });
+      }
+    });
+  },
+
+  // 切换拼音/普通模式
+  togglePinyin() {
+    this.setData({ hasPinyin: !this.data.hasPinyin });
+  },
+
   onMarkDone() {
     if (!this.data.readDone) {
       const remaining = this.data.minReadSeconds - this.data.readSeconds;
-      wx.showToast({
-        title: `请再阅读${remaining}秒`,
-        icon: 'none'
-      });
+      wx.showToast({ title: `请再阅读${remaining}秒`, icon: 'none' });
       return;
     }
 

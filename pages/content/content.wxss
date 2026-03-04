@@ -16,14 +16,6 @@
   border-radius: 16rpx;
   font-size: 24rpx;
   font-weight: 600;
-}
-
-.type-badge.book {
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
-}
-
-.type-badge.video {
   background: rgba(255, 255, 255, 0.25);
   color: #fff;
 }
@@ -70,17 +62,70 @@
   font-weight: 600;
 }
 
-/* 电子书阅读器 */
+/* ===== 电子书阅读器 ===== */
 .reader-card {
   padding: 0;
   overflow: hidden;
 }
 
-.book-reader {
-  height: 800rpx;
-  padding: 36rpx 32rpx;
+/* 拼音/普通模式切换 */
+.mode-toggle {
+  text-align: center;
+  padding: 16rpx;
+  background: #F0F4FF;
+  font-size: 24rpx;
+  color: #4F7CFF;
+  font-weight: 600;
+  border-bottom: 1rpx solid #E0E8FF;
 }
 
+.book-reader {
+  height: 800rpx;
+  padding: 32rpx;
+}
+
+/* 拼音内容 */
+.pinyin-content {
+  padding-bottom: 40rpx;
+}
+
+.pinyin-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 12rpx;
+  line-height: 1;
+}
+
+.py-char {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 4rpx 2rpx;
+}
+
+.py-top {
+  font-size: 18rpx;
+  color: #999;
+  line-height: 1.4;
+  font-family: 'PingFang SC', sans-serif;
+}
+
+.py-bottom {
+  font-size: 34rpx;
+  color: #333;
+  line-height: 1.5;
+}
+
+.py-plain {
+  font-size: 34rpx;
+  color: #333;
+  line-height: 1.5;
+  margin: 4rpx 0;
+  align-self: flex-end;
+}
+
+/* 普通文本 */
 .book-content {
   line-height: 1.9;
 }
@@ -95,20 +140,7 @@
   height: 24rpx;
 }
 
-.highlight-title {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #4F7CFF;
-  margin-top: 16rpx;
-  margin-bottom: 12rpx;
-}
-
-.list-item {
-  padding-left: 16rpx;
-  color: #555;
-}
-
-/* 视频播放器 */
+/* ===== 视频播放器 ===== */
 .player-card {
   padding: 0;
   overflow: hidden;
@@ -124,6 +156,94 @@
   height: 420rpx;
 }
 
+/* B站/外部链接视频 */
+.link-video {
+  text-align: center;
+  padding: 50rpx 40rpx;
+}
+
+.link-video-icon {
+  font-size: 100rpx;
+  margin-bottom: 20rpx;
+}
+
+.link-video-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.link-video-desc {
+  font-size: 26rpx;
+  color: #666;
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+.bilibili-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #FB7299, #FC9DB7);
+  color: #fff;
+  padding: 8rpx 24rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  margin-bottom: 24rpx;
+}
+
+.link-tip {
+  background: #F5F7FA;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  text-align: left;
+  margin-bottom: 24rpx;
+}
+
+.tip-main {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.tip-detail {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.6;
+}
+
+.copy-link-btn {
+  background: linear-gradient(135deg, #4F7CFF, #6B8FFF);
+  color: #fff;
+  padding: 24rpx 48rpx;
+  border-radius: 48rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+  margin-bottom: 20rpx;
+}
+
+.copy-link-btn::after {
+  border: none;
+}
+
+.link-url {
+  background: #F5F5F5;
+  padding: 16rpx 20rpx;
+  border-radius: 8rpx;
+  word-break: break-all;
+}
+
+.link-url text {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* 未配置视频 */
 .no-video {
   text-align: center;
   padding: 60rpx 40rpx;
@@ -165,10 +285,10 @@
   margin-bottom: 8rpx;
 }
 
-.tip-detail {
-  font-size: 24rpx !important;
-  color: #999 !important;
-  font-weight: 400 !important;
+.no-video-tip .tip-detail {
+  font-size: 24rpx;
+  color: #999;
+  font-weight: 400;
   line-height: 1.6;
 }
 

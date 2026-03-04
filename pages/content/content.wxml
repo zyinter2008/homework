@@ -15,12 +15,36 @@
     </view>
   </view>
 
-  <!-- 电子书阅读器 -->
+  <!-- ===== 电子书阅读器 ===== -->
   <view wx:if="{{isBook}}" class="card reader-card">
+    <!-- 拼音/普通模式切换按钮 -->
+    <view wx:if="{{item.hasPinyin}}" class="mode-toggle" bindtap="togglePinyin">
+      <text>{{hasPinyin ? '拼 → 切换为普通模式' : '普 → 切换为拼音模式'}}</text>
+    </view>
+
     <scroll-view scroll-y class="book-reader" enhanced show-scrollbar="{{false}}">
-      <view class="book-content">
+      <!-- 拼音模式 -->
+      <view wx:if="{{hasPinyin}}" class="pinyin-content">
+        <block wx:for="{{pinyinParagraphs}}" wx:key="index" wx:for-item="line">
+          <!-- 空行 = 段落分隔 -->
+          <view wx:if="{{line.length === 0}}" class="paragraph-gap"></view>
+          <!-- 拼音行 -->
+          <view wx:if="{{line.length > 0}}" class="pinyin-line">
+            <block wx:for="{{line}}" wx:key="idx" wx:for-item="ch" wx:for-index="idx">
+              <view wx:if="{{ch.p}}" class="py-char">
+                <text class="py-top">{{ch.p}}</text>
+                <text class="py-bottom">{{ch.c}}</text>
+              </view>
+              <text wx:if="{{!ch.p}}" class="py-plain">{{ch.c}}</text>
+            </block>
+          </view>
+        </block>
+      </view>
+
+      <!-- 普通模式 -->
+      <view wx:if="{{!hasPinyin}}" class="book-content">
         <block wx:for="{{paragraphs}}" wx:key="index">
-          <view wx:if="{{item !== ''}}" class="paragraph {{item.length < 20 && (item[0] === '🤔' || item[0] === '💡' || item[0] === '📖' || item[0] === '📚' || item[0] === '🧠' || item[0] === '✏' || item[0] === '🔢' || item[0] === '📋') ? 'highlight-title' : (item[0] === '-' || item[0] === '·' ? 'list-item' : '')}}">
+          <view wx:if="{{item !== ''}}" class="paragraph">
             <text>{{item}}</text>
           </view>
           <view wx:if="{{item === ''}}" class="paragraph-gap"></view>
@@ -29,9 +53,10 @@
     </scroll-view>
   </view>
 
-  <!-- 视频播放器 -->
+  <!-- ===== 视频播放器 ===== -->
   <view wx:if="{{isVideo}}" class="card player-card">
-    <view wx:if="{{hasVideoUrl}}" class="video-wrap">
+    <!-- mp4 直链：原生播放器 -->
+    <view wx:if="{{videoLinkType === 'mp4'}}" class="video-wrap">
       <video
         src="{{item.videoUrl}}"
         class="video-player"
@@ -43,14 +68,53 @@
         bindended="onVideoEnded"
       ></video>
     </view>
-    <view wx:if="{{!hasVideoUrl}}" class="no-video">
+
+    <!-- B站链接 -->
+    <view wx:if="{{videoLinkType === 'bilibili'}}" class="link-video">
+      <view class="link-video-icon">📺</view>
+      <text class="link-video-title">{{item.title}}</text>
+      <text class="link-video-desc">{{item.desc}}</text>
+      <view class="bilibili-badge">
+        <text>B站视频</text>
+      </view>
+      <view class="link-tip">
+        <text class="tip-main">小程序内无法直接播放B站视频</text>
+        <text class="tip-detail">点击下方按钮复制链接，然后在浏览器或B站App中打开观看</text>
+      </view>
+      <button class="copy-link-btn" bindtap="onCopyLink">
+        <text>📋 复制视频链接</text>
+      </button>
+      <view class="link-url">
+        <text>{{item.videoUrl}}</text>
+      </view>
+    </view>
+
+    <!-- 其他链接 -->
+    <view wx:if="{{videoLinkType === 'link'}}" class="link-video">
+      <view class="link-video-icon">🔗</view>
+      <text class="link-video-title">{{item.title}}</text>
+      <text class="link-video-desc">{{item.desc}}</text>
+      <view class="link-tip">
+        <text class="tip-main">此视频需在外部浏览器观看</text>
+        <text class="tip-detail">点击下方按钮复制链接，在浏览器中打开</text>
+      </view>
+      <button class="copy-link-btn" bindtap="onCopyLink">
+        <text>📋 复制视频链接</text>
+      </button>
+      <view class="link-url">
+        <text>{{item.videoUrl}}</text>
+      </view>
+    </view>
+
+    <!-- 未配置链接 -->
+    <view wx:if="{{videoLinkType === 'none'}}" class="no-video">
       <view class="no-video-icon">🎬</view>
       <text class="no-video-title">{{item.title}}</text>
       <text class="no-video-desc">{{item.desc}}</text>
       <view class="no-video-tip">
         <text>📢 视频链接未配置</text>
-        <text class="tip-detail">请家长在「家长中心 → 内容管理」中为此视频设置播放链接，支持 mp4 格式的视频地址。</text>
-        <text class="tip-detail">配置后，视频将直接在小程序内播放。</text>
+        <text class="tip-detail">请家长在「家长中心 → 内容管理」中为此视频设置播放链接。</text>
+        <text class="tip-detail">支持 mp4 直链（小程序内播放）和 B站等视频链接（复制到浏览器观看）。</text>
       </view>
     </view>
   </view>

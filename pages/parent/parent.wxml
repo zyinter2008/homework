@@ -308,9 +308,9 @@
 
           <!-- 视频：输入视频链接 -->
           <view wx:if="{{newContent.type === 'video'}}" class="form-item">
-            <text class="form-label">视频链接（mp4格式）</text>
-            <input class="form-input" placeholder="https://..." value="{{newContent.videoUrl}}" bindinput="onContentVideoUrlInput" />
-            <text class="form-hint">支持 mp4 格式视频直链，可使用腾讯云COS、阿里云OSS等存储服务</text>
+            <text class="form-label">视频链接</text>
+            <input class="form-input" placeholder="mp4直链 或 B站链接 均可" value="{{newContent.videoUrl}}" bindinput="onContentVideoUrlInput" />
+            <text class="form-hint">支持以下格式：\n· mp4 直链 → 小程序内直接播放\n· B站链接（bilibili.com / b23.tv）→ 复制链接到浏览器观看\n· 其他视频链接 → 复制链接到浏览器观看</text>
           </view>
 
           <button class="btn-primary" bindtap="saveContent" style="margin-top: 20rpx; width: 100%;">添加内容</button>
@@ -324,10 +324,12 @@
           <text>使用说明</text>
         </view>
         <view class="tip-list">
-          <text class="tip-item">📖 电子书：直接在输入框中输入文章正文，孩子可在小程序内阅读</text>
-          <text class="tip-item">🎬 视频：填入 mp4 视频直链，孩子可在小程序内直接播放观看</text>
-          <text class="tip-item">🔗 视频链接获取：可将视频上传到腾讯云COS、阿里云OSS等云存储，获取直链地址</text>
+          <text class="tip-item">📖 电子书：直接在输入框中输入文章正文，6-8岁内容自动显示拼音</text>
+          <text class="tip-item">🎬 视频（mp4）：填入 mp4 视频直链，小程序内直接播放</text>
+          <text class="tip-item">📺 视频（B站）：直接粘贴 B站视频链接，孩子可复制到浏览器/B站App观看</text>
+          <text class="tip-item">🔗 其他视频链接：同样支持复制到浏览器观看</text>
           <text class="tip-item">🔄 添加或删除内容后，今日推荐会自动刷新</text>
+          <text class="tip-item">☁️ 如需多设备同步数据，请在设置中配置云开发（需真实 AppID）</text>
         </view>
       </view>
     </view>

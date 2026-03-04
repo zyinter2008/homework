@@ -1,6 +1,60 @@
 /**
  * 作业打卡小程序 - 数据管理工具模块
  */
+const cloud = require('./cloud.js');
+
+// ========== 云同步存储封装 ==========
+
+/** 写入本地存储 + 异步同步到云端 */
+function syncSet(key, value) {
+  wx.setStorageSync(key, value);
+  cloud.cloudSet(key, value);
+}
+
+// ========== 拼音解析工具 ==========
+
+/**
+ * 解析带拼音标注的文本
+ * 格式：你(nǐ)好(hǎo)！ → [{c:'你',p:'nǐ'}, {c:'好',p:'hǎo'}, {c:'！',p:''}]
+ * 换行符 \n 分段
+ * 返回：二维数组 [[{c,p}...], [{c,p}...], ...]，每个子数组是一段
+ */
+function parsePinyinText(text) {
+  if (!text) return [];
+  const lines = text.split('\n');
+  return lines.map(function (line) {
+    const chars = [];
+    var i = 0;
+    while (i < line.length) {
+      if (i + 1 < line.length && line[i + 1] === '(') {
+        var ch = line[i];
+        var close = line.indexOf(')', i + 2);
+        if (close === -1) {
+          chars.push({ c: ch, p: '' });
+          i++;
+        } else {
+          chars.push({ c: ch, p: line.substring(i + 2, close) });
+          i = close + 1;
+        }
+      } else {
+        chars.push({ c: line[i], p: '' });
+        i++;
+      }
+    }
+    return chars;
+  });
+}
+
+// ========== 视频链接工具 ==========
+
+/** 检测视频链接类型 */
+function detectVideoLinkType(url) {
+  if (!url || !url.trim()) return 'none';
+  url = url.trim();
+  if (url.indexOf('bilibili.com') !== -1 || url.indexOf('b23.tv') !== -1) return 'bilibili';
+  if (/\.(mp4|m3u8|mov)(\?|$)/i.test(url)) return 'mp4';
+  return 'link';
+}
 
 // ========== 日期时间工具 ==========
 
@@ -38,7 +92,7 @@ function getSettings() {
 }
 
 function saveSettings(settings) {
-  wx.setStorageSync('settings', settings);
+  syncSet('settings', settings);
 }
 
 // ========== 预设任务管理 ==========
@@ -48,7 +102,7 @@ function getPresetTasks() {
 }
 
 function savePresetTasks(tasks) {
-  wx.setStorageSync('presetTasks', tasks);
+  syncSet('presetTasks', tasks);
 }
 
 // ========== 每日数据管理 ==========
@@ -85,7 +139,7 @@ function getDailyData(date) {
 
 /** 保存每日数据 */
 function saveDailyData(date, data) {
-  wx.setStorageSync(getDailyKey(date), data);
+  syncSet(getDailyKey(date), data);
 }
 
 /** 设置今天的任务 */
@@ -183,7 +237,7 @@ function addStarRecord(amount, reason, date) {
     amount: amount,
     reason: reason
   });
-  wx.setStorageSync('stars', stars);
+  syncSet('stars', stars);
   return stars;
 }
 
@@ -202,19 +256,22 @@ function getBuiltinRecommendations() {
   return [
     // === 6-8岁 电子书 ===
     {
-      id: 1, title: '《十万个为什么》— 为什么天空是蓝色的？', type: 'book', duration: '15分钟',
-      ageMin: 6, ageMax: 8, desc: '探索大自然中光的奥秘',
-      content: '你有没有抬头看过天空，觉得它蓝蓝的特别好看？可是，天空为什么是蓝色的呢？\n\n其实，太阳光看起来是白色的，但它其实是由七种颜色混合在一起的，就像彩虹一样——红、橙、黄、绿、蓝、靛、紫。\n\n当阳光穿过大气层的时候，空气中有很多很小很小的分子。这些小分子会把阳光"打散"。不同颜色的光波长不一样，蓝色的光波长比较短，更容易被小分子弹来弹去，散到天空的各个方向。所以，我们从地面往上看，就觉得整个天空都是蓝色的了！\n\n🤔 动动脑筋：\n那你知道为什么傍晚的时候，天空会变成红色和橙色吗？\n\n因为傍晚时太阳光要穿过更厚的大气层，蓝色的光都被散射掉了，只剩下红色和橙色的光能到达我们的眼睛。这就是日落时天空那么美丽的原因！\n\n📖 今日小知识：\n- 太阳光由7种颜色组成\n- 蓝光波长短，容易被散射\n- 日落时红光波长长，穿透力更强'
+      id: 1, title: '《十万个为什么》— 天空为什么是蓝色的？', type: 'book', duration: '15分钟',
+      ageMin: 6, ageMax: 8, desc: '探索大自然中光的奥秘', hasPinyin: true,
+      content: '你有没有抬头看过天空，觉得它蓝蓝的特别好看？可是，天空为什么是蓝色的呢？\n\n其实，太阳光看起来是白色的，但它其实是由七种颜色混合在一起的，就像彩虹一样——红、橙、黄、绿、蓝、靛、紫。\n\n当阳光穿过大气层的时候，空气中有很多很小很小的分子。蓝色的光波长比较短，更容易被小分子弹来弹去，散到天空的各个方向。所以我们看到的天空就是蓝色的了！\n\n🤔 想一想：\n傍晚时天空为什么变成红色和橙色？因为蓝光都散掉了，只剩下红光能到达我们的眼睛。这就是日落很美的原因！',
+      pinyinContent: '你(nǐ)有(yǒu)没(méi)有(yǒu)抬(tái)头(tóu)看(kàn)过(guò)天(tiān)空(kōng)？\n觉(jué)得(de)它(tā)蓝(lán)蓝(lán)的(de)，特(tè)别(bié)好(hǎo)看(kàn)！\n可(kě)是(shì)，天(tiān)空(kōng)为(wèi)什(shén)么(me)是(shì)蓝(lán)色(sè)的(de)呢(ne)？\n\n太(tài)阳(yáng)光(guāng)看(kàn)起(qǐ)来(lái)是(shì)白(bái)色(sè)的(de)，\n但(dàn)它(tā)其(qí)实(shí)是(shì)由(yóu)七(qī)种(zhǒng)颜(yán)色(sè)混(hùn)在(zài)一(yī)起(qǐ)的(de)，\n就(jiù)像(xiàng)彩(cǎi)虹(hóng)一(yí)样(yàng)：\n红(hóng)、橙(chéng)、黄(huáng)、绿(lǜ)、蓝(lán)、靛(diàn)、紫(zǐ)。\n\n当(dāng)阳(yáng)光(guāng)穿(chuān)过(guò)天(tiān)空(kōng)时(shí)，\n空(kōng)气(qì)里(lǐ)有(yǒu)很(hěn)多(duō)小(xiǎo)小(xiǎo)的(de)分(fēn)子(zǐ)。\n蓝(lán)色(sè)的(de)光(guāng)更(gèng)容(róng)易(yì)被(bèi)弹(tán)来(lái)弹(tán)去(qù)，\n散(sàn)到(dào)天(tiān)空(kōng)的(de)各(gè)个(gè)方(fāng)向(xiàng)。\n所(suǒ)以(yǐ)我(wǒ)们(men)看(kàn)到(dào)的(de)天(tiān)空(kōng)就(jiù)是(shì)蓝(lán)色(sè)的(de)啦(la)！\n\n🤔 想(xiǎng)一(yì)想(xiǎng)：\n傍(bàng)晚(wǎn)时(shí)天(tiān)空(kōng)为(wèi)什(shén)么(me)变(biàn)红(hóng)了(le)？\n因(yīn)为(wèi)蓝(lán)光(guāng)都(dōu)散(sàn)掉(diào)了(le)，\n只(zhǐ)剩(shèng)下(xià)红(hóng)光(guāng)能(néng)到(dào)达(dá)我(wǒ)们(men)的(de)眼(yǎn)睛(jīng)。\n这(zhè)就(jiù)是(shì)日(rì)落(luò)很(hěn)美(měi)的(de)原(yuán)因(yīn)！'
     },
     {
       id: 3, title: '《成语故事》— 守株待兔', type: 'book', duration: '15分钟',
-      ageMin: 6, ageMax: 8, desc: '经典成语故事，学做聪明的孩子',
-      content: '从前，宋国有一个农夫，每天都在田里辛苦地干活。\n\n有一天，一只兔子飞快地跑过田地，一头撞在了田边的大树桩上，把脖子撞断了，当场就死了。\n\n农夫捡到了这只兔子，高兴极了："哈哈，不用干活就能白白得到一只兔子，太好了！"\n\n从那以后，农夫再也不种地了。他每天都坐在树桩旁边，等着下一只兔子自己撞上来。\n\n一天过去了……一个星期过去了……一个月过去了……\n\n再也没有兔子撞过来。\n\n而他的田地呢？因为没人照料，长满了杂草，庄稼全都枯死了。\n\n📚 成语意思：\n"守株待兔"比喻不主动努力，只想碰运气，希望不劳而获。\n\n💡 道理：\n第一次得到兔子是运气，但运气不会一直有。想要有好的收获，就要脚踏实地地努力！\n\n🤔 想一想：\n你在学习中有没有"守株待兔"的时候呢？比如不好好复习，总想着考试能碰到做过的题？'
+      ageMin: 6, ageMax: 8, desc: '经典成语故事，学做聪明的孩子', hasPinyin: true,
+      content: '从前，宋国有一个农夫，每天都在田里辛苦地干活。\n\n有一天，一只兔子飞快地跑过田地，一头撞在了田边的大树桩上，当场就死了。\n\n农夫捡到了这只兔子，高兴极了："不用干活就能白白得到一只兔子，太好了！"\n\n从那以后，农夫再也不种地了。他每天都坐在树桩旁边，等着下一只兔子自己撞上来。\n\n可是，再也没有兔子撞过来。他的田地长满了杂草，庄稼全都枯死了。\n\n💡 道理：\n"守株待兔"告诉我们，不能只靠运气。想要有好的收获，就要脚踏实地地努力！',
+      pinyinContent: '从(cóng)前(qián)，宋(sòng)国(guó)有(yǒu)一(yí)个(gè)农(nóng)夫(fū)，\n每(měi)天(tiān)都(dōu)在(zài)田(tián)里(lǐ)辛(xīn)苦(kǔ)地(de)干(gàn)活(huó)。\n\n有(yǒu)一(yī)天(tiān)，一(yī)只(zhī)兔(tù)子(zi)飞(fēi)快(kuài)地(de)跑(pǎo)过(guò)田(tián)地(dì)，\n一(yī)头(tóu)撞(zhuàng)在(zài)了(le)田(tián)边(biān)的(de)大(dà)树(shù)桩(zhuāng)上(shàng)，\n当(dāng)场(chǎng)就(jiù)死(sǐ)了(le)。\n\n农(nóng)夫(fū)捡(jiǎn)到(dào)了(le)这(zhè)只(zhī)兔(tù)子(zi)，\n高(gāo)兴(xìng)极(jí)了(le)：\n"不(bù)用(yòng)干(gàn)活(huó)就(jiù)能(néng)得(dé)到(dào)兔(tù)子(zi)，太(tài)好(hǎo)了(le)！"\n\n从(cóng)那(nà)以(yǐ)后(hòu)，\n农(nóng)夫(fū)再(zài)也(yě)不(bù)种(zhòng)地(dì)了(le)。\n他(tā)每(měi)天(tiān)都(dōu)坐(zuò)在(zài)树(shù)桩(zhuāng)旁(páng)边(biān)，\n等(děng)着(zhe)下(xià)一(yī)只(zhī)兔(tù)子(zi)自(zì)己(jǐ)撞(zhuàng)上(shàng)来(lái)。\n\n可(kě)是(shì)，再(zài)也(yě)没(méi)有(yǒu)兔(tù)子(zi)撞(zhuàng)过(guò)来(lái)。\n他(tā)的(de)田(tián)地(dì)长(zhǎng)满(mǎn)了(le)杂(zá)草(cǎo)，\n庄(zhuāng)稼(jia)全(quán)都(dōu)枯(kū)死(sǐ)了(le)。\n\n💡 道(dào)理(lǐ)：\n"守(shǒu)株(zhū)待(dài)兔(tù)"告(gào)诉(sù)我(wǒ)们(men)，\n不(bù)能(néng)只(zhǐ)靠(kào)运(yùn)气(qì)。\n想(xiǎng)要(yào)有(yǒu)好(hǎo)的(de)收(shōu)获(huò)，\n就(jiù)要(yào)脚(jiǎo)踏(tà)实(shí)地(dì)努(nǔ)力(lì)！'
     },
     {
-      id: 5, title: '《昆虫记》— 勤劳的蜜蜂', type: 'book', duration: '20分钟',
-      ageMin: 6, ageMax: 8, desc: '认识蜜蜂王国的奇妙生活',
-      content: '你吃过甜甜的蜂蜜吗？你知道蜂蜜是怎么来的吗？今天我们来认识一下蜜蜂这个了不起的小家伙！\n\n🐝 蜜蜂王国\n一个蜂巢里住着几万只蜜蜂，它们分工合作：\n- 蜂王：整个蜂巢只有一个蜂王，她的任务是产卵\n- 工蜂：数量最多，负责采蜜、建巢、喂养宝宝、守卫蜂巢\n- 雄蜂：数量较少，任务是和蜂王交配\n\n🌸 蜜蜂怎么采蜜？\n工蜂飞到花朵上，用长长的"舌头"（口器）吸取花蜜，存在自己肚子里的"蜜胃"中。一只蜜蜂要采集大约1500朵花，才能装满一次蜜胃！\n\n回到蜂巢后，采集蜂把花蜜吐给内勤蜂。内勤蜂反复吞吐花蜜，用翅膀扇风让水分蒸发，花蜜就慢慢变成了浓稠的蜂蜜。\n\n🔢 惊人的数字：\n- 酿1千克蜂蜜，蜜蜂要飞行约45万公里（相当于绕地球11圈！）\n- 一只工蜂一辈子只能酿十二分之一茶匙的蜂蜜\n\n🐝 蜜蜂的舞蹈语言\n蜜蜂发现了好的花源，回来后会跳"8字舞"告诉同伴方向和距离。这是昆虫世界里最厉害的"语言"之一！\n\n💡 今日启发：\n蜜蜂虽然小小的，但是通过团队合作，每只蜜蜂做好自己的事情，就能创造出甜甜的蜂蜜。我们在学校也是一样，大家分工合作，就能完成了不起的事情！'
+      id: 5, title: '《昆虫记》— 勤劳的蜜蜂', type: 'book', duration: '15分钟',
+      ageMin: 6, ageMax: 8, desc: '认识蜜蜂王国的奇妙生活', hasPinyin: true,
+      content: '你吃过甜甜的蜂蜜吗？蜂蜜是怎么来的呢？\n\n🐝 蜜蜂王国\n一个蜂巢里住着几万只蜜蜂，它们分工合作：\n- 蜂王：只有一个，负责产卵\n- 工蜂：数量最多，负责采蜜和建巢\n- 雄蜂：数量较少\n\n🌸 蜜蜂怎么采蜜？\n工蜂飞到花朵上，吸取花蜜存在肚子里。一只蜜蜂要采集大约1500朵花，才能装满一次！回到蜂巢后，蜜蜂们用翅膀扇风让水分蒸发，花蜜就变成了蜂蜜。\n\n🐝 蜜蜂还会跳舞！发现好的花，它会跳"8字舞"告诉同伴方向。\n\n💡 蜜蜂虽然小，但是大家分工合作，就能做成了不起的事情！',
+      pinyinContent: '你(nǐ)吃(chī)过(guò)甜(tián)甜(tián)的(de)蜂(fēng)蜜(mì)吗(ma)？\n蜂(fēng)蜜(mì)是(shì)怎(zěn)么(me)来(lái)的(de)呢(ne)？\n\n🐝 蜜(mì)蜂(fēng)王(wáng)国(guó)\n一(yí)个(gè)蜂(fēng)巢(cháo)里(lǐ)住(zhù)着(zhe)几(jǐ)万(wàn)只(zhī)蜜(mì)蜂(fēng)，\n它(tā)们(men)分(fēn)工(gōng)合(hé)作(zuò)：\n蜂(fēng)王(wáng)：只(zhǐ)有(yǒu)一(yí)个(gè)，负(fù)责(zé)产(chǎn)卵(luǎn)\n工(gōng)蜂(fēng)：数(shù)量(liàng)最(zuì)多(duō)，负(fù)责(zé)采(cǎi)蜜(mì)和(hé)建(jiàn)巢(cháo)\n\n🌸 蜜(mì)蜂(fēng)怎(zěn)么(me)采(cǎi)蜜(mì)？\n工(gōng)蜂(fēng)飞(fēi)到(dào)花(huā)朵(duǒ)上(shàng)，\n吸(xī)取(qǔ)花(huā)蜜(mì)存(cún)在(zài)肚(dù)子(zi)里(lǐ)。\n一(yī)只(zhī)蜜(mì)蜂(fēng)要(yào)采(cǎi)集(jí)大(dà)约(yuē)1500朵(duǒ)花(huā)，\n才(cái)能(néng)装(zhuāng)满(mǎn)一(yí)次(cì)！\n回(huí)到(dào)蜂(fēng)巢(cháo)后(hòu)，\n蜜(mì)蜂(fēng)们(men)用(yòng)翅(chì)膀(bǎng)扇(shān)风(fēng)让(ràng)水(shuǐ)分(fèn)蒸(zhēng)发(fā)，\n花(huā)蜜(mì)就(jiù)变(biàn)成(chéng)了(le)蜂(fēng)蜜(mì)。\n\n🐝 蜜(mì)蜂(fēng)还(hái)会(huì)跳(tiào)舞(wǔ)！\n发(fā)现(xiàn)好(hǎo)的(de)花(huā)，\n它(tā)会(huì)跳(tiào)"8字(zì)舞(wǔ)"告(gào)诉(sù)同(tóng)伴(bàn)方(fāng)向(xiàng)。\n\n💡 蜜(mì)蜂(fēng)虽(suī)然(rán)小(xiǎo)，\n但(dàn)是(shì)大(dà)家(jiā)分(fēn)工(gōng)合(hé)作(zuò)，\n就(jiù)能(néng)做(zuò)成(chéng)了(le)不(bù)起(qǐ)的(de)事(shì)情(qíng)！'
     },
     // === 6-8岁 视频 ===
     {
@@ -298,7 +355,7 @@ function getCustomRecommendations() {
 
 /** 保存自定义推荐内容 */
 function saveCustomRecommendations(list) {
-  wx.setStorageSync('customRecommendations', list);
+  syncSet('customRecommendations', list);
 }
 
 /** 添加自定义推荐内容 */
@@ -415,7 +472,7 @@ function getGifts() {
 }
 
 function saveGifts(gifts) {
-  wx.setStorageSync('gifts', gifts);
+  syncSet('gifts', gifts);
 }
 
 function addGift(gift) {
@@ -450,7 +507,7 @@ function getRedemptions() {
 }
 
 function saveRedemptions(redemptions) {
-  wx.setStorageSync('redemptions', redemptions);
+  syncSet('redemptions', redemptions);
 }
 
 /** 学生兑换礼品 */
@@ -535,6 +592,8 @@ module.exports = {
   getTotalStars,
   getStarHistory,
   getRecommendations,
+  parsePinyinText,
+  detectVideoLinkType,
   getRecommendationById,
   getAllRecommendations,
   getCustomRecommendations,
