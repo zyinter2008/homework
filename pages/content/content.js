@@ -22,8 +22,15 @@ Page({
   _timer: null,
 
   onLoad(options) {
-    const id = Number(options.id);
-    const item = util.getRecommendationById(id);
+    let item = null;
+
+    if (options.bookId) {
+      const books = require('../../utils/books.js').getBookLibrary();
+      item = books.find(function (b) { return b.id === Number(options.bookId); }) || null;
+    } else {
+      item = util.getRecommendationById(Number(options.id));
+    }
+
     if (!item) {
       wx.showToast({ title: '内容不存在', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 1500);

@@ -20,7 +20,7 @@
   <!-- 已解锁内容 -->
   <view wx:if="{{isUnlocked}}">
     <!-- 功能导航 -->
-    <view class="nav-tabs">
+    <scroll-view class="nav-tabs" scroll-x enable-flex>
       <view
         class="nav-tab {{activeSection === 'review' ? 'active' : ''}}"
         bindtap="switchSection" data-section="review"
@@ -38,6 +38,10 @@
         bindtap="switchSection" data-section="redemptions"
       >📦 交付</view>
       <view
+        class="nav-tab {{activeSection === 'books' ? 'active' : ''}}"
+        bindtap="switchSection" data-section="books"
+      >📖 书库</view>
+      <view
         class="nav-tab {{activeSection === 'content' ? 'active' : ''}}"
         bindtap="switchSection" data-section="content"
       >📚 内容</view>
@@ -45,7 +49,7 @@
         class="nav-tab {{activeSection === 'settings' ? 'active' : ''}}"
         bindtap="switchSection" data-section="settings"
       >⚙️ 设置</view>
-    </view>
+    </scroll-view>
 
     <!-- ===== 作业评价 ===== -->
     <view wx:if="{{activeSection === 'review'}}">
@@ -228,6 +232,38 @@
         <view wx:if="{{redemptions.length === 0}}" class="empty-state">
           <view class="icon">📦</view>
           <text>暂无兑换记录</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 书库管理 ===== -->
+    <view wx:if="{{activeSection === 'books'}}">
+      <view class="card">
+        <view class="card-title">
+          <text>📖</text>
+          <text>拼音电子书库</text>
+        </view>
+        <text class="section-desc">共 {{bookLibrary.length}} 本带拼音电子书，适合6-8岁。开关控制是否纳入每日推荐，点击"预览"可查看内容。</text>
+
+        <view class="book-actions-bar">
+          <text class="book-enabled-count">已启用 {{enabledBookIds.length}}/{{bookLibrary.length}} 本</text>
+          <view class="action-btn edit" bindtap="enableAllBooks">全部启用</view>
+        </view>
+
+        <view class="book-library-list">
+          <view wx:for="{{bookLibrary}}" wx:key="id" class="book-library-item">
+            <view class="book-toggle-area" bindtap="toggleBook" data-id="{{item.id}}">
+              <switch checked="{{item.enabled}}" color="#4CAF50" />
+            </view>
+            <view class="book-info-area">
+              <view class="book-title-row">
+                <text class="book-category-tag">{{item.category}}</text>
+                <text class="book-name">{{item.title}}</text>
+              </view>
+              <text class="book-desc">{{item.desc}}</text>
+            </view>
+            <view class="book-preview-btn" bindtap="previewBook" data-id="{{item.id}}">预览</view>
+          </view>
         </view>
       </view>
     </view>

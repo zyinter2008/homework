@@ -4,7 +4,7 @@ Page({
   data: {
     isUnlocked: false,
     pinInput: '',
-    activeSection: 'review', // review | tasks | gifts | redemptions | content | settings
+    activeSection: 'review', // review | tasks | gifts | redemptions | books | content | settings
     // 评价相关
     today: '',
     todayDisplay: '',
@@ -19,6 +19,9 @@ Page({
     editingGiftId: null,
     // 兑换管理
     redemptions: [],
+    // 书库管理
+    bookLibrary: [],
+    enabledBookIds: [],
     // 内容管理
     customRecommendations: [],
     showAddContent: false,
@@ -43,6 +46,8 @@ Page({
       presetTasks: util.getPresetTasks(),
       gifts: util.getGifts(),
       redemptions: util.getRedemptions(),
+      bookLibrary: this._buildBookList(),
+      enabledBookIds: util.getEnabledBookIds(),
       customRecommendations: util.getCustomRecommendations(),
       settings: util.getSettings()
     });
@@ -245,6 +250,45 @@ Page({
         }
       }
     });
+  },
+
+  // ========== 书库管理 ==========
+  _buildBookList() {
+    var books = util.getFullBookLibrary();
+    var ids = util.getEnabledBookIds();
+    return books.map(function (b) {
+      return Object.assign({}, b, { enabled: ids.indexOf(b.id) >= 0 });
+    });
+  },
+
+  toggleBook(e) {
+    var bookId = Number(e.currentTarget.dataset.id);
+    var ids = this.data.enabledBookIds.slice();
+    var idx = ids.indexOf(bookId);
+    if (idx >= 0) {
+      if (ids.length <= 1) {
+        wx.showToast({ title: '至少保留1本书', icon: 'none' });
+        return;
+      }
+      ids.splice(idx, 1);
+    } else {
+      ids.push(bookId);
+    }
+    util.setEnabledBookIds(ids);
+    this.setData({ enabledBookIds: ids, bookLibrary: this._buildBookList() });
+  },
+
+  enableAllBooks() {
+    var all = util.getFullBookLibrary();
+    var ids = all.map(function (b) { return b.id; });
+    util.setEnabledBookIds(ids);
+    this.setData({ enabledBookIds: ids, bookLibrary: this._buildBookList() });
+    wx.showToast({ title: '已全部启用', icon: 'success' });
+  },
+
+  previewBook(e) {
+    var bookId = e.currentTarget.dataset.id;
+    wx.navigateTo({ url: '/pages/content/content?bookId=' + bookId });
   },
 
   // ========== 内容管理 ==========
