@@ -216,6 +216,37 @@
   line-height: 1.6;
 }
 
+/* B站跳转按钮 */
+.bilibili-jump-btn {
+  background: linear-gradient(135deg, #FB7299, #FC9DB7);
+  color: #fff;
+  padding: 28rpx 48rpx;
+  border-radius: 48rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  border: none;
+  margin-bottom: 20rpx;
+  box-shadow: 0 6rpx 24rpx rgba(251, 114, 153, 0.35);
+}
+
+.bilibili-jump-btn::after {
+  border: none;
+}
+
+.link-actions-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20rpx;
+}
+
+.link-action-sub {
+  padding: 10rpx 28rpx;
+  background: #F0F0F0;
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
 .copy-link-btn {
   background: linear-gradient(135deg, #4F7CFF, #6B8FFF);
   color: #fff;

@@ -77,13 +77,14 @@
       <view class="bilibili-badge">
         <text>B站视频</text>
       </view>
-      <view class="link-tip">
-        <text class="tip-main">小程序内无法直接播放B站视频</text>
-        <text class="tip-detail">点击下方按钮复制链接，然后在浏览器或B站App中打开观看</text>
-      </view>
-      <button class="copy-link-btn" bindtap="onCopyLink">
-        <text>📋 复制视频链接</text>
+      <button class="bilibili-jump-btn" bindtap="onOpenBilibili">
+        <text>▶ 打开B站观看视频</text>
       </button>
+      <view class="link-actions-row">
+        <view class="link-action-sub" bindtap="onCopyLink">
+          <text>📋 复制链接</text>
+        </view>
+      </view>
       <view class="link-url">
         <text>{{item.videoUrl}}</text>
       </view>

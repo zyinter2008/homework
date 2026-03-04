@@ -83,6 +83,36 @@ Page({
     this.setData({ readDone: true });
   },
 
+  // 跳转B站小程序播放视频
+  onOpenBilibili() {
+    const url = this.data.item.videoUrl || '';
+    const bvMatch = url.match(/BV[a-zA-Z0-9]+/);
+
+    if (!bvMatch) {
+      // 无法提取 BV 号，降级为复制链接
+      this.onCopyLink();
+      return;
+    }
+
+    const bvid = bvMatch[0];
+    wx.navigateToMiniProgram({
+      appId: 'wx7564fd5313d24844',
+      path: `pages/video/video?bvid=${bvid}`,
+      success: () => {
+        this.setData({ readDone: true });
+      },
+      fail: () => {
+        // 跳转失败，降级为复制链接
+        wx.showModal({
+          title: '跳转失败',
+          content: '无法打开B站小程序，已为你复制链接，请在浏览器中打开',
+          showCancel: false,
+          success: () => { this.onCopyLink(); }
+        });
+      }
+    });
+  },
+
   // 复制链接到剪贴板
   onCopyLink() {
     const url = this.data.item.videoUrl;
