@@ -8,7 +8,7 @@
  * 4. 将下方 ENV_ID 替换为你的云环境 ID
  */
 
-const ENV_ID = ''; // ← 替换为你的云环境 ID，如 'homework-1g2h3j'
+const ENV_ID = 'cloud1-8gytt4p1d02cff72';
 
 let cloudReady = false;
 let db = null;
