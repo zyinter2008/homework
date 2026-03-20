@@ -1,5 +1,23 @@
 const util = require('../../utils/util.js');
 
+const CHEERS = [
+  '太棒了！', '你真厉害！', '好样的！', '干得漂亮！',
+  '超级棒！', '真了不起！', '你是最棒的！', '厉害厉害！',
+  '给你点赞！', '牛牛牛！', '漂亮！', '就是这么强！'
+];
+
+const ALL_DONE_CHEERS = [
+  '全部搞定！你太强了！', '完美通关！', '今日任务大满贯！',
+  '全部完成！你是小天才！', '所有作业都搞定啦！', '大功告成！'
+];
+
+const CHEER_EMOJIS = ['🌟', '🎉', '👏', '💪', '🔥', '✨', '🏅', '👍'];
+const ALL_DONE_EMOJIS = ['🏆', '🎊', '🥇', '👑', '🌈'];
+
+function randomPick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 Page({
   data: {
     today: '',
@@ -12,7 +30,16 @@ Page({
     progressPercent: 0,
     newTaskName: '',
     showAddTask: false,
-    checkInResult: null
+    checklistTotal: 0,
+    checklistUnchecked: 0,
+    checklistAllDone: false,
+    // celebration overlay
+    showCelebration: false,
+    celebrationType: '', // 'task' or 'allDone'
+    celebrationEmoji: '',
+    celebrationText: '',
+    celebrationSub: '',
+    celebrationStars: []
   },
 
   onLoad() {
@@ -20,7 +47,6 @@ Page({
   },
 
   onShow() {
-    // 更新自定义TabBar选中状态
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 0 });
     }
@@ -39,7 +65,6 @@ Page({
     const today = util.getToday();
     let dailyData = util.getDailyData(today);
 
-    // 如果今天还没有任务，自动从预设加载
     if (dailyData.tasks.length === 0) {
       const presets = util.getPresetTasks();
       if (presets.length > 0) {
@@ -51,6 +76,7 @@ Page({
     const totalCount = dailyData.tasks.length;
     const allCompleted = totalCount > 0 && completedCount === totalCount;
     const progressPercent = totalCount > 0 ? Math.round(completedCount / totalCount * 100) : 0;
+    const clStats = util.getChecklistStats();
 
     this.setData({
       dailyData: dailyData,
@@ -58,23 +84,123 @@ Page({
       completedCount,
       totalCount,
       allCompleted,
-      progressPercent
+      progressPercent,
+      checklistTotal: clStats.total,
+      checklistUnchecked: clStats.unchecked,
+      checklistAllDone: clStats.allDone
     });
   },
 
-  // 切换任务完成状态
-  onToggleTask(e) {
-    const taskId = e.currentTarget.dataset.id;
-    const today = util.getToday();
-    const dailyData = util.toggleTask(today, taskId);
-    const completedCount = dailyData.tasks.filter(t => t.completed).length;
-    const totalCount = dailyData.tasks.length;
-    const allCompleted = totalCount > 0 && completedCount === totalCount;
-    const progressPercent = totalCount > 0 ? Math.round(completedCount / totalCount * 100) : 0;
-    this.setData({ dailyData, completedCount, totalCount, allCompleted, progressPercent });
+  _buildFloatingStars(count) {
+    const stars = [];
+    const emojis = ['⭐', '🌟', '✨', '💫'];
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        id: i,
+        emoji: emojis[i % emojis.length],
+        left: Math.floor(Math.random() * 80) + 10,
+        delay: Math.floor(Math.random() * 600),
+        size: Math.floor(Math.random() * 20) + 30
+      });
+    }
+    return stars;
   },
 
-  // 显示添加任务
+  _showTaskCelebration(taskTitle) {
+    this.setData({
+      showCelebration: true,
+      celebrationType: 'task',
+      celebrationEmoji: randomPick(CHEER_EMOJIS),
+      celebrationText: randomPick(CHEERS),
+      celebrationSub: taskTitle + '  +1⭐',
+      celebrationStars: this._buildFloatingStars(8)
+    });
+    this._autoDismissCelebration = setTimeout(() => {
+      this.setData({ showCelebration: false });
+    }, 2000);
+  },
+
+  _showAllDoneCelebration() {
+    this.setData({
+      showCelebration: true,
+      celebrationType: 'allDone',
+      celebrationEmoji: randomPick(ALL_DONE_EMOJIS),
+      celebrationText: randomPick(ALL_DONE_CHEERS),
+      celebrationSub: '额外奖励 +3⭐',
+      celebrationStars: this._buildFloatingStars(16)
+    });
+  },
+
+  onMaskTap() {
+    if (this.data.celebrationType === 'task') {
+      this.onDismissCelebration();
+    }
+  },
+
+  onCardTap() {
+    if (this.data.celebrationType === 'task') {
+      this.onDismissCelebration();
+    }
+  },
+
+  onDismissCelebration() {
+    if (this._autoDismissCelebration) {
+      clearTimeout(this._autoDismissCelebration);
+    }
+    this.setData({ showCelebration: false });
+  },
+
+  onCelebrationGoChecklist() {
+    this.setData({ showCelebration: false });
+    wx.navigateTo({ url: '/pages/checklist/checklist' });
+  },
+
+  onCheckInTask(e) {
+    const taskId = e.currentTarget.dataset.id;
+    const today = util.getToday();
+    const result = util.checkInTask(today, taskId);
+
+    if (!result.success) {
+      wx.showToast({ title: result.message, icon: 'none' });
+      return;
+    }
+
+    this.refreshData();
+
+    if (result.allDone) {
+      this._showAllDoneCelebration();
+    } else {
+      this._showTaskCelebration(result.taskTitle);
+    }
+  },
+
+  onUndoCheckIn(e) {
+    const taskId = e.currentTarget.dataset.id;
+    const today = util.getToday();
+
+    wx.showModal({
+      title: '撤销打卡',
+      content: '确定要撤销这项打卡吗？对应的星星也会扣除。',
+      confirmText: '撤销',
+      confirmColor: '#F44336',
+      success: (res) => {
+        if (res.confirm) {
+          const result = util.undoCheckInTask(today, taskId);
+          if (!result.success) {
+            wx.showToast({ title: result.message, icon: 'none' });
+            return;
+          }
+          this.refreshData();
+          let msg = '「' + result.taskTitle + '」已撤销 -1⭐';
+          if (result.undoneBonus) {
+            msg = '「' + result.taskTitle + '」已撤销 -1⭐\n全部完成奖励也已扣除 -3⭐';
+          }
+          wx.showToast({ title: msg, icon: 'none', duration: 2000 });
+        }
+      }
+    });
+  },
+
   showAddTask() {
     this.setData({ showAddTask: true });
   },
@@ -87,7 +213,6 @@ Page({
     this.setData({ newTaskName: e.detail.value });
   },
 
-  // 添加临时任务
   addTask() {
     const name = this.data.newTaskName.trim();
     if (!name) {
@@ -105,77 +230,19 @@ Page({
     });
     util.saveDailyData(today, dailyData);
 
-    this.setData({
-      dailyData: dailyData,
-      newTaskName: '',
-      showAddTask: false
-    });
-
+    this.setData({ newTaskName: '', showAddTask: false });
+    this.refreshData();
     wx.showToast({ title: '任务已添加', icon: 'success' });
   },
 
-  // 打卡
-  onCheckIn() {
-    const today = util.getToday();
-    const result = util.checkIn(today);
-
-    if (!result.success) {
-      wx.showToast({ title: result.message, icon: 'none' });
-      return;
-    }
-
-    this.setData({ checkInResult: result });
-    this.refreshData();
-
-    // 显示打卡成功弹窗
-    let msg = `🎉 打卡成功！获得 ${result.starsEarned} 颗星`;
-    if (result.timeBonus) {
-      msg += '\n⏰ 8:30前完成，额外+1⭐';
-    }
-    if (result.canShowRecommend) {
-      wx.showModal({
-        title: '打卡成功！',
-        content: msg + '\n\n📚 完成推荐阅读还能再得1颗星哦！',
-        confirmText: '去看看',
-        cancelText: '稍后再看',
-        success: (res) => {
-          if (res.confirm) {
-            wx.navigateTo({ url: '/pages/recommend/recommend' });
-          }
-        }
-      });
-    } else {
-      wx.showModal({
-        title: '打卡成功！',
-        content: msg,
-        showCancel: false,
-        confirmText: '好的'
-      });
-    }
-
-    // 提醒家长检查
-    setTimeout(() => {
-      wx.showToast({
-        title: '📢 已提醒家长检查作业',
-        icon: 'none',
-        duration: 2000
-      });
-    }, 2000);
-  },
-
-  // 跳转到推荐页
-  goRecommend() {
-    wx.navigateTo({ url: '/pages/recommend/recommend' });
-  },
-
-  // 删除任务
   onDeleteTask(e) {
     const taskId = e.currentTarget.dataset.id;
     const today = util.getToday();
     const dailyData = util.getDailyData(today);
-    
-    if (dailyData.checkedIn) {
-      wx.showToast({ title: '已打卡，无法修改', icon: 'none' });
+    const task = dailyData.tasks.find(t => t.id === taskId);
+
+    if (task && task.completed) {
+      wx.showToast({ title: '已打卡的任务无法删除', icon: 'none' });
       return;
     }
 
@@ -186,10 +253,17 @@ Page({
         if (res.confirm) {
           dailyData.tasks = dailyData.tasks.filter(t => t.id !== taskId);
           util.saveDailyData(today, dailyData);
-          this.setData({ dailyData });
+          this.refreshData();
         }
       }
     });
+  },
+
+  goChecklist() {
+    wx.navigateTo({ url: '/pages/checklist/checklist' });
+  },
+
+  goRecommend() {
+    wx.navigateTo({ url: '/pages/recommend/recommend' });
   }
 });
-

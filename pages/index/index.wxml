@@ -1,4 +1,37 @@
 <view class="container">
+  <!-- 打卡庆祝弹层 -->
+  <view class="celebration-mask {{showCelebration ? 'show' : ''}}" wx:if="{{showCelebration}}" catchtap="onMaskTap">
+    <!-- 飞散的星星 -->
+    <view
+      wx:for="{{celebrationStars}}"
+      wx:key="id"
+      class="floating-star"
+      style="left: {{item.left}}%; animation-delay: {{item.delay}}ms; font-size: {{item.size}}rpx;"
+    >{{item.emoji}}</view>
+
+    <!-- 主内容 -->
+    <view class="celebration-card {{celebrationType}}" catchtap="onCardTap">
+      <view class="celebration-emoji">{{celebrationEmoji}}</view>
+      <view class="celebration-text">{{celebrationText}}</view>
+      <view class="celebration-sub">{{celebrationSub}}</view>
+
+      <!-- 全部完成的操作按钮 -->
+      <view class="celebration-actions" wx:if="{{celebrationType === 'allDone'}}">
+        <view class="celebration-btn primary" bindtap="onCelebrationGoChecklist">
+          <text>🎒 检查明天的书包</text>
+        </view>
+        <view class="celebration-btn ghost" bindtap="onDismissCelebration">
+          <text>稍后再看</text>
+        </view>
+      </view>
+
+      <!-- 单项完成的点击提示 -->
+      <view class="celebration-hint" wx:if="{{celebrationType === 'task'}}">
+        <text>点击任意处关闭</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 顶部状态栏 -->
   <view class="header-card card">
     <view class="header-top">
@@ -10,8 +43,9 @@
       </view>
     </view>
     <view class="greeting" wx:if="{{dailyData}}">
-      <text wx:if="{{dailyData.checkedIn}}" class="greeting-done">✅ 今日已打卡！</text>
+      <text wx:if="{{allCompleted}}" class="greeting-done">🎉 今日作业全部完成！</text>
       <text wx:elif="{{dailyData.tasks.length === 0}}" class="greeting-empty">还没有设置今天的任务哦</text>
+      <text wx:elif="{{completedCount > 0}}" class="greeting-todo">已完成 {{completedCount}} 项，继续加油！</text>
       <text wx:else class="greeting-todo">加油完成今天的作业吧！</text>
     </view>
   </view>
@@ -40,18 +74,35 @@
         wx:key="id"
         class="task-item {{item.completed ? 'completed' : ''}}"
       >
-        <view class="task-check" bindtap="onToggleTask" data-id="{{item.id}}">
-          <view class="checkbox {{item.completed ? 'checked' : ''}}">
-            <text wx:if="{{item.completed}}">✓</text>
+        <view class="task-left">
+          <view class="task-status {{item.completed ? 'done' : ''}}">
+            <text wx:if="{{item.completed}}">⭐</text>
+            <text wx:else>○</text>
           </view>
+          <view class="task-title {{item.completed ? 'line-through' : ''}}">{{item.title}}</view>
         </view>
-        <view class="task-title {{item.completed ? 'line-through' : ''}}">{{item.title}}</view>
-        <view class="task-delete" bindtap="onDeleteTask" data-id="{{item.id}}" wx:if="{{!dailyData.checkedIn}}">✕</view>
+        <view class="task-right">
+          <view wx:if="{{!item.completed}}" class="checkin-task-btn" bindtap="onCheckInTask" data-id="{{item.id}}">
+            <text>打卡 +1⭐</text>
+          </view>
+          <view wx:if="{{item.completed}}" class="task-done-tag">
+            <text>已完成</text>
+          </view>
+          <view wx:if="{{item.completed}}" class="undo-btn" bindtap="onUndoCheckIn" data-id="{{item.id}}">
+            <text>撤销</text>
+          </view>
+          <view class="task-delete" bindtap="onDeleteTask" data-id="{{item.id}}" wx:if="{{!item.completed}}">✕</view>
+        </view>
       </view>
     </view>
 
+    <!-- 全部完成提示 -->
+    <view class="all-done-banner" wx:if="{{allCompleted}}">
+      <text>🏆 全部完成！额外获得 +3⭐ 奖励</text>
+    </view>
+
     <!-- 添加任务 -->
-    <view wx:if="{{!dailyData.checkedIn}}">
+    <view wx:if="{{!allCompleted}}">
       <view class="add-task-btn" bindtap="showAddTask" wx:if="{{!showAddTask}}">
         <text>+ 添加今日任务</text>
       </view>
@@ -97,18 +148,6 @@
     </view>
   </view>
 
-  <!-- 打卡按钮 -->
-  <view class="checkin-section" wx:if="{{dailyData && dailyData.tasks.length > 0 && !dailyData.checkedIn}}">
-    <button
-      class="checkin-btn {{allCompleted ? 'active' : 'disabled'}}"
-      bindtap="onCheckIn"
-      disabled="{{!allCompleted}}"
-    >
-      <text class="checkin-icon">🎯</text>
-      <text class="checkin-text">{{allCompleted ? '完成打卡' : '完成所有任务后打卡'}}</text>
-    </button>
-  </view>
-
   <!-- 打卡后状态 -->
   <view class="card" wx:if="{{dailyData && dailyData.checkedIn}}">
     <view class="card-title">
@@ -117,17 +156,13 @@
     </view>
     <view class="checkin-info">
       <view class="info-row">
-        <text class="info-label">打卡时间</text>
+        <text class="info-label">完成时间</text>
         <text class="info-value">{{dailyData.checkedInTime}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">完成星星</text>
+        <text class="info-label">获得星星</text>
         <view class="info-value">
-          <text wx:if="{{dailyData.starsEarned.completion}}">⭐</text>
-          <text wx:if="{{dailyData.starsEarned.timeBonus}}">⭐</text>
-          <text wx:if="{{dailyData.starsEarned.recommend}}">⭐</text>
-          <text wx:if="{{dailyData.starsEarned.parentReview > 0}}">⭐</text>
-          <text wx:if="{{dailyData.starsEarned.parentReview < 0}}" style="color: #F44336;">-⭐</text>
+          <text>{{totalCount}} + 3 = {{totalCount + 3}}⭐</text>
         </view>
       </view>
       <view class="info-row" wx:if="{{dailyData.parentReviewed}}">
@@ -150,5 +185,21 @@
       <text>📚 推荐阅读已完成 ✅</text>
     </view>
   </view>
-</view>
 
+  <!-- 书包整理入口 -->
+  <view class="checklist-entry card {{allCompleted && checklistUnchecked > 0 ? 'highlight' : ''}}" bindtap="goChecklist">
+    <view class="checklist-entry-content">
+      <view class="checklist-icon">🎒</view>
+      <view class="checklist-info">
+        <text class="checklist-title">明天要带的东西</text>
+        <text class="checklist-desc" wx:if="{{checklistTotal === 0}}">点击添加明天要带的物品</text>
+        <text class="checklist-desc ok" wx:elif="{{checklistAllDone}}">全部装好了 ✅</text>
+        <text class="checklist-desc warn" wx:else>还有 {{checklistUnchecked}} 样东西没装</text>
+      </view>
+      <view class="checklist-badge" wx:if="{{checklistUnchecked > 0}}">
+        <text>{{checklistUnchecked}}</text>
+      </view>
+      <view class="checklist-arrow" wx:else>→</view>
+    </view>
+  </view>
+</view>

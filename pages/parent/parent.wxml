@@ -102,7 +102,12 @@
 
         <view wx:if="{{!dailyData || !dailyData.checkedIn}}" class="empty-state">
           <view class="icon">📝</view>
-          <text>学生今天还没有打卡</text>
+          <block wx:if="{{taskProgress > 0}}">
+            <text>作业进行中（已打卡 {{taskProgress}}/{{dailyData.tasks.length}}）</text>
+          </block>
+          <block wx:else>
+            <text>学生今天还没有打卡</text>
+          </block>
         </view>
       </view>
     </view>

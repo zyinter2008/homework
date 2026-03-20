@@ -39,10 +39,13 @@ Page({
 
   refreshData() {
     const today = util.getToday();
+    const dailyData = util.getDailyData(today);
+    const taskProgress = dailyData.tasks.filter(t => t.completed).length;
     this.setData({
       today: today,
       todayDisplay: util.formatDate(today),
-      dailyData: util.getDailyData(today),
+      dailyData: dailyData,
+      taskProgress: taskProgress,
       presetTasks: util.getPresetTasks(),
       gifts: util.getGifts(),
       redemptions: util.getRedemptions(),
@@ -130,7 +133,11 @@ Page({
     }
     const dailyData = util.getDailyData();
     if (dailyData.checkedIn) {
-      wx.showToast({ title: '今天已打卡，无法修改', icon: 'none' });
+      wx.showToast({ title: '全部已打卡，无法修改', icon: 'none' });
+      return;
+    }
+    if (dailyData.tasks.some(t => t.completed)) {
+      wx.showToast({ title: '已有任务打卡，无法覆盖', icon: 'none' });
       return;
     }
     wx.showModal({

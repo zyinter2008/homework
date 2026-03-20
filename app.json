@@ -5,7 +5,8 @@
     "pages/shop/shop",
     "pages/parent/parent",
     "pages/recommend/recommend",
-    "pages/content/content"
+    "pages/content/content",
+    "pages/checklist/checklist"
   ],
   "window": {
     "navigationBarBackgroundColor": "#4F7CFF",

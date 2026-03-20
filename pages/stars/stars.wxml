@@ -20,13 +20,13 @@
     <view class="rule-list">
       <view class="rule-item">
         <text class="rule-icon">✅</text>
-        <text class="rule-text">完成当天所有作业并打卡</text>
+        <text class="rule-text">每完成一项作业打卡</text>
         <text class="rule-stars">+1⭐</text>
       </view>
       <view class="rule-item">
-        <text class="rule-icon">⏰</text>
-        <text class="rule-text">晚上8:30前完成打卡</text>
-        <text class="rule-stars">+1⭐</text>
+        <text class="rule-icon">🏆</text>
+        <text class="rule-text">全部作业打卡完成</text>
+        <text class="rule-stars">+3⭐</text>
       </view>
       <view class="rule-item">
         <text class="rule-icon">📚</text>

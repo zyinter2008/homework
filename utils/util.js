@@ -128,8 +128,7 @@ function getDailyData(date) {
       recommendShown: false,
       recommendCompleted: false,
       starsEarned: {
-        completion: false,
-        timeBonus: false,
+        allBonus: false,
         recommend: false,
         parentReview: 0
       }
@@ -165,60 +164,72 @@ function loadPresetToToday() {
   return getDailyData();
 }
 
-/** 切换任务完成状态 */
-function toggleTask(date, taskId) {
+/** 单个任务打卡 */
+function checkInTask(date, taskId) {
   const data = getDailyData(date);
   const task = data.tasks.find(t => t.id === taskId);
-  if (task && !data.checkedIn) {
-    task.completed = !task.completed;
-    saveDailyData(date, data);
-  }
-  return data;
-}
 
-/** 检查是否所有任务都完成 */
-function areAllTasksCompleted(date) {
-  const data = getDailyData(date);
-  return data.tasks.length > 0 && data.tasks.every(t => t.completed);
-}
+  if (!task) return { success: false, message: '任务不存在' };
+  if (task.completed) return { success: false, message: '该任务已打卡' };
 
-// ========== 打卡逻辑 ==========
+  task.completed = true;
+  addStarRecord(1, '完成作业：' + task.title, date);
 
-/** 执行打卡 */
-function checkIn(date) {
-  date = date || getToday();
-  const data = getDailyData(date);
+  const allDone = data.tasks.length > 0 && data.tasks.every(t => t.completed);
 
-  if (data.checkedIn) return { success: false, message: '今天已经打卡过了' };
-  if (!areAllTasksCompleted(date)) return { success: false, message: '还有未完成的任务' };
+  if (allDone) {
+    data.checkedIn = true;
+    data.checkedInTime = getCurrentTime();
+    data.starsEarned.allBonus = true;
+    addStarRecord(3, '全部作业打卡完成奖励', date);
 
-  const now = getCurrentTime();
-  data.checkedIn = true;
-  data.checkedInTime = now;
-
-  // 完成所有作业 +1星
-  data.starsEarned.completion = true;
-  addStarRecord(1, '完成所有作业', date);
-
-  // 20:30前完成 +1星
-  if (now < '20:30') {
-    data.starsEarned.timeBonus = true;
-    addStarRecord(1, '8:30前完成打卡', date);
-  }
-
-  // 21:00前可以看推荐
-  if (now < '21:00') {
-    data.recommendShown = true;
+    if (getCurrentTime() < '21:00') {
+      data.recommendShown = true;
+    }
   }
 
   saveDailyData(date, data);
 
   return {
     success: true,
-    message: '打卡成功！',
-    starsEarned: (data.starsEarned.completion ? 1 : 0) + (data.starsEarned.timeBonus ? 1 : 0),
-    canShowRecommend: data.recommendShown,
-    timeBonus: data.starsEarned.timeBonus
+    taskTitle: task.title,
+    allDone: allDone,
+    starsEarned: 1,
+    bonusStars: allDone ? 3 : 0,
+    canShowRecommend: allDone && data.recommendShown
+  };
+}
+
+/** 撤销单个任务打卡 */
+function undoCheckInTask(date, taskId) {
+  const data = getDailyData(date);
+  const task = data.tasks.find(t => t.id === taskId);
+
+  if (!task) return { success: false, message: '任务不存在' };
+  if (!task.completed) return { success: false, message: '该任务未打卡' };
+
+  // 如果全部完成奖励已发放，先撤销奖励
+  const hadAllBonus = data.starsEarned.allBonus;
+  if (hadAllBonus) {
+    data.checkedIn = false;
+    data.checkedInTime = null;
+    data.starsEarned.allBonus = false;
+    addStarRecord(-3, '撤销全部完成奖励', date);
+
+    if (!data.recommendCompleted) {
+      data.recommendShown = false;
+    }
+  }
+
+  task.completed = false;
+  addStarRecord(-1, '撤销打卡：' + task.title, date);
+
+  saveDailyData(date, data);
+
+  return {
+    success: true,
+    taskTitle: task.title,
+    undoneBonus: hadAllBonus
   };
 }
 
@@ -567,6 +578,62 @@ function deliverGift(redemptionId) {
   return false;
 }
 
+// ========== 物品清单管理 ==========
+
+function _resetChecklistIfNewDay() {
+  const today = getToday();
+  const lastReset = wx.getStorageSync('checklistResetDate');
+  if (lastReset !== today) {
+    const list = wx.getStorageSync('checklist') || [];
+    if (list.length > 0) {
+      list.forEach(item => { item.checked = false; });
+      wx.setStorageSync('checklist', list);
+    }
+    wx.setStorageSync('checklistResetDate', today);
+  }
+}
+
+function getChecklist() {
+  _resetChecklistIfNewDay();
+  return wx.getStorageSync('checklist') || [];
+}
+
+function saveChecklist(list) {
+  syncSet('checklist', list);
+}
+
+function addChecklistItem(name) {
+  const list = getChecklist();
+  const exists = list.some(i => i.name === name);
+  if (exists) return list;
+  list.push({ id: Date.now(), name: name, checked: false });
+  saveChecklist(list);
+  return list;
+}
+
+function deleteChecklistItem(id) {
+  let list = getChecklist();
+  list = list.filter(item => item.id !== id);
+  saveChecklist(list);
+  return list;
+}
+
+function toggleChecklistItem(id) {
+  const list = getChecklist();
+  const item = list.find(i => i.id === id);
+  if (item) {
+    item.checked = !item.checked;
+    saveChecklist(list);
+  }
+  return list;
+}
+
+function getChecklistStats() {
+  const list = getChecklist();
+  const unchecked = list.filter(i => !i.checked).length;
+  return { total: list.length, unchecked: unchecked, allDone: list.length > 0 && unchecked === 0 };
+}
+
 // ========== 验证家长密码 ==========
 function verifyParentPin(pin) {
   const settings = getSettings();
@@ -588,13 +655,18 @@ module.exports = {
   saveDailyData,
   setTodayTasks,
   loadPresetToToday,
-  toggleTask,
-  areAllTasksCompleted,
-  checkIn,
+  checkInTask,
+  undoCheckInTask,
   getStars,
   addStarRecord,
   getTotalStars,
   getStarHistory,
+  getChecklist,
+  saveChecklist,
+  addChecklistItem,
+  deleteChecklistItem,
+  toggleChecklistItem,
+  getChecklistStats,
   getRecommendations,
   getFullBookLibrary,
   getEnabledBookIds,
