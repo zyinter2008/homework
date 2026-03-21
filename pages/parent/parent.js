@@ -53,6 +53,7 @@ Page({
       weekdayPresets: util.getWeekdayPresets(),
       weekendPresets: util.getWeekendPresets(),
       isWeekday: util.isWeekday(),
+      taskTab: util.isWeekday() ? 'weekday' : 'weekend',
       gifts: util.getGifts(),
       redemptions: util.getRedemptions(),
       bookLibrary: this._buildBookList(),
@@ -161,9 +162,11 @@ Page({
   },
 
   applyPresetToToday() {
-    const presets = util.getPresetTasks();
+    const tab = this.data.taskTab;
+    const presets = tab === 'weekday' ? util.getWeekdayPresets() : util.getWeekendPresets();
+    const label = tab === 'weekday' ? '工作日' : '周末';
     if (presets.length === 0) {
-      wx.showToast({ title: '当前模板没有预设任务', icon: 'none' });
+      wx.showToast({ title: `${label}模板没有预设任务`, icon: 'none' });
       return;
     }
     const dailyData = util.getDailyData();
@@ -175,13 +178,12 @@ Page({
       wx.showToast({ title: '已有任务打卡，无法覆盖', icon: 'none' });
       return;
     }
-    const label = this.data.isWeekday ? '工作日' : '周末';
     wx.showModal({
       title: '确认',
       content: `将${label}模板设为今日作业？（会覆盖已设置的任务）`,
       success: (res) => {
         if (res.confirm) {
-          util.loadPresetToToday();
+          util.setTodayTasks(presets);
           this.refreshData();
           wx.showToast({ title: '已设置今日任务', icon: 'success' });
         }

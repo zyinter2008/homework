@@ -3,9 +3,9 @@ page {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   background-color: #F5F7FA;
   color: #333333;
-  font-size: 28rpx;
+  font-size: 32rpx;
   box-sizing: border-box;
-  padding-bottom: 120rpx;
+  padding-bottom: 140rpx;
 }
 
 .container {
@@ -15,14 +15,14 @@ page {
 /* 卡片样式 */
 .card {
   background: #ffffff;
-  border-radius: 20rpx;
-  padding: 30rpx;
+  border-radius: 24rpx;
+  padding: 36rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 }
 
 .card-title {
-  font-size: 32rpx;
+  font-size: 36rpx;
   font-weight: 700;
   color: #333;
   margin-bottom: 20rpx;
@@ -39,8 +39,8 @@ page {
   background: linear-gradient(135deg, #4F7CFF, #6B8FFF);
   color: #ffffff;
   border-radius: 48rpx;
-  padding: 20rpx 48rpx;
-  font-size: 30rpx;
+  padding: 26rpx 56rpx;
+  font-size: 34rpx;
   font-weight: 600;
   text-align: center;
   border: none;
@@ -61,8 +61,8 @@ page {
   color: #4F7CFF;
   border: 2rpx solid #4F7CFF;
   border-radius: 48rpx;
-  padding: 18rpx 40rpx;
-  font-size: 28rpx;
+  padding: 24rpx 48rpx;
+  font-size: 32rpx;
   text-align: center;
 }
 
@@ -70,8 +70,8 @@ page {
   background: linear-gradient(135deg, #FF5252, #FF7B7B);
   color: #ffffff;
   border-radius: 48rpx;
-  padding: 20rpx 48rpx;
-  font-size: 30rpx;
+  padding: 26rpx 56rpx;
+  font-size: 34rpx;
   font-weight: 600;
   text-align: center;
   border: none;
@@ -81,8 +81,8 @@ page {
   background: linear-gradient(135deg, #4CAF50, #66BB6A);
   color: #ffffff;
   border-radius: 48rpx;
-  padding: 20rpx 48rpx;
-  font-size: 30rpx;
+  padding: 26rpx 56rpx;
+  font-size: 34rpx;
   font-weight: 600;
   text-align: center;
   border: none;
@@ -93,11 +93,11 @@ page {
   text-align: center;
   padding: 60rpx 0;
   color: #999;
-  font-size: 28rpx;
+  font-size: 32rpx;
 }
 
 .empty-state .icon {
-  font-size: 80rpx;
+  font-size: 100rpx;
   margin-bottom: 20rpx;
 }
 
@@ -105,15 +105,15 @@ page {
 .divider {
   height: 1rpx;
   background: #EEEEEE;
-  margin: 20rpx 0;
+  margin: 24rpx 0;
 }
 
 /* 标签 */
 .tag {
   display: inline-block;
-  padding: 6rpx 16rpx;
+  padding: 8rpx 20rpx;
   border-radius: 20rpx;
-  font-size: 22rpx;
+  font-size: 26rpx;
   margin-right: 10rpx;
 }
 
@@ -136,4 +136,3 @@ page {
   background: #FFEBEE;
   color: #F44336;
 }
-

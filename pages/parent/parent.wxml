@@ -186,7 +186,7 @@
         <view class="divider"></view>
 
         <button class="btn-primary" bindtap="applyPresetToToday" style="width: 100%;">
-          📥 将{{isWeekday ? '工作日' : '周末'}}模板设为今日作业
+          📥 将{{taskTab === 'weekday' ? '工作日' : '周末'}}模板设为今日作业
         </button>
       </view>
     </view>
