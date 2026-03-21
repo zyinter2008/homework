@@ -2,16 +2,41 @@ const util = require('../../utils/util.js');
 
 const QUICK_ADD_GROUPS = [
   {
-    label: '学习用品',
-    items: ['书包', '铅笔', '橡皮', '尺子', '文具盒', '彩笔', '剪刀', '胶棒']
+    label: '✏️ 学习用品',
+    items: [
+      { name: '书包', icon: '🎒' },
+      { name: '铅笔', icon: '✏️' },
+      { name: '橡皮', icon: '🧹' },
+      { name: '尺子', icon: '📏' },
+      { name: '文具盒', icon: '🗃️' },
+      { name: '彩笔', icon: '🖍️' },
+      { name: '剪刀', icon: '✂️' },
+      { name: '胶棒', icon: '🧴' }
+    ]
   },
   {
-    label: '课本作业',
-    items: ['语文书', '数学书', '英语书', '语文本', '数学本', '英语本', '作业']
+    label: '📖 课本作业',
+    items: [
+      { name: '语文书', icon: '📕' },
+      { name: '数学书', icon: '📗' },
+      { name: '英语书', icon: '📘' },
+      { name: '语文本', icon: '📓' },
+      { name: '数学本', icon: '📒' },
+      { name: '英语本', icon: '📔' },
+      { name: '作业', icon: '📝' }
+    ]
   },
   {
-    label: '生活物品',
-    items: ['水壶', '纸巾', '红领巾', '饭盒', '雨伞', '口罩', '钥匙']
+    label: '🎽 生活物品',
+    items: [
+      { name: '水壶', icon: '🥤' },
+      { name: '纸巾', icon: '🧻' },
+      { name: '红领巾', icon: '🧣' },
+      { name: '饭盒', icon: '🍱' },
+      { name: '雨伞', icon: '☂️' },
+      { name: '口罩', icon: '😷' },
+      { name: '钥匙', icon: '🔑' }
+    ]
   }
 ];
 
@@ -46,7 +71,11 @@ Page({
     const checked = list.filter(i => i.checked);
     const existingNames = list.map(i => i.name);
     const existingMap = {};
-    existingNames.forEach(n => { existingMap[n] = true; });
+    existingNames.forEach(n => {
+      existingMap[n] = true;
+      var spIdx = n.indexOf(' ');
+      if (spIdx > 0 && spIdx <= 3) existingMap[n.slice(spIdx + 1)] = true;
+    });
 
     const today = util.getToday();
     const dailyData = util.getDailyData(today);
@@ -76,12 +105,14 @@ Page({
   },
 
   onQuickAdd(e) {
-    const name = e.currentTarget.dataset.name;
-    if (this.data.existingNames.indexOf(name) !== -1) {
+    const ds = e.currentTarget.dataset;
+    const name = ds.name;
+    const icon = ds.icon || '';
+    if (this.data.existingMap[name]) {
       wx.showToast({ title: '「' + name + '」已在清单中', icon: 'none' });
       return;
     }
-    util.addChecklistItem(name);
+    util.addChecklistItem(icon ? icon + ' ' + name : name);
     this.refreshData();
     wx.showToast({ title: '已添加「' + name + '」', icon: 'success', duration: 1000 });
   },

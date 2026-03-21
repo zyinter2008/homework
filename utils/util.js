@@ -96,10 +96,46 @@ function saveSettings(settings) {
   syncSet('settings', settings);
 }
 
-// ========== 预设任务管理 ==========
+// ========== 预设任务管理（工作日 / 周末双模板） ==========
 
-function getPresetTasks() {
-  return wx.getStorageSync('presetTasks') || [];
+const DEFAULT_WEEKDAY_TASKS = ['语文作业', '数学作业', '英语作业', '课外阅读'];
+
+const DEFAULT_WEEKEND_TASKS = [
+  '语文：1、默写拼音；2、听写第二单元词语；3、小蓝扩句练习；4、预习课文《……》',
+  '数学：1、练习20以内加减法口算50题；2、应用题练习',
+  '英语：1、第二单元课文熟读3遍；2、单词游戏',
+  '课外阅读：2篇'
+];
+
+function isWeekday(dateStr) {
+  const d = dateStr ? new Date(dateStr.replace(/-/g, '/')) : new Date();
+  const day = d.getDay();
+  return day >= 1 && day <= 5;
+}
+
+function getWeekdayPresets() {
+  const saved = wx.getStorageSync('weekdayPresets');
+  if (saved && saved.length > 0) return saved;
+  return DEFAULT_WEEKDAY_TASKS.slice();
+}
+
+function saveWeekdayPresets(tasks) {
+  syncSet('weekdayPresets', tasks);
+}
+
+function getWeekendPresets() {
+  const saved = wx.getStorageSync('weekendPresets');
+  if (saved && saved.length > 0) return saved;
+  return DEFAULT_WEEKEND_TASKS.slice();
+}
+
+function saveWeekendPresets(tasks) {
+  syncSet('weekendPresets', tasks);
+}
+
+function getPresetTasks(dateStr) {
+  const weekday = isWeekday(dateStr || getToday());
+  return weekday ? getWeekdayPresets() : getWeekendPresets();
 }
 
 function savePresetTasks(tasks) {
@@ -649,6 +685,11 @@ module.exports = {
   isBeforeTime,
   getSettings,
   saveSettings,
+  isWeekday,
+  getWeekdayPresets,
+  saveWeekdayPresets,
+  getWeekendPresets,
+  saveWeekendPresets,
   getPresetTasks,
   savePresetTasks,
   getDailyData,

@@ -117,7 +117,7 @@ Page({
     });
     this._autoDismissCelebration = setTimeout(() => {
       this.setData({ showCelebration: false });
-    }, 2000);
+    }, 5000);
   },
 
   _showAllDoneCelebration() {

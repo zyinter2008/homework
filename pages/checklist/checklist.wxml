@@ -105,14 +105,16 @@
         <view class="quick-tags">
           <view
             wx:for="{{item.items}}"
-            wx:for-item="tagName"
-            wx:key="*this"
-            class="quick-tag {{existingMap[tagName] ? 'added' : ''}}"
+            wx:for-item="tag"
+            wx:key="name"
+            class="quick-tag {{existingMap[tag.name] ? 'added' : ''}}"
             bindtap="onQuickAdd"
-            data-name="{{tagName}}"
+            data-name="{{tag.name}}"
+            data-icon="{{tag.icon}}"
           >
-            <text>{{tagName}}</text>
-            <text wx:if="{{existingMap[tagName]}}" class="tag-check"> ✓</text>
+            <text class="tag-icon">{{tag.icon}}</text>
+            <text>{{tag.name}}</text>
+            <text wx:if="{{existingMap[tag.name]}}" class="tag-check"> ✓</text>
           </view>
         </view>
       </view>

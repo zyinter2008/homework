@@ -278,6 +278,8 @@
 }
 
 .quick-tag {
+  display: flex;
+  align-items: center;
   background: #F0F4FF;
   color: #4F7CFF;
   font-size: 26rpx;
@@ -285,6 +287,11 @@
   padding: 14rpx 28rpx;
   border-radius: 32rpx;
   border: 2rpx solid #D6E4FF;
+}
+
+.tag-icon {
+  margin-right: 6rpx;
+  font-size: 30rpx;
 }
 
 .quick-tag:active {

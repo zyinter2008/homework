@@ -9,9 +9,13 @@ Page({
     today: '',
     todayDisplay: '',
     dailyData: null,
-    // 预设任务
-    presetTasks: [],
-    newPresetTask: '',
+    // 预设任务（双模板）
+    taskTab: 'weekday',
+    weekdayPresets: [],
+    weekendPresets: [],
+    newWeekdayTask: '',
+    newWeekendTask: '',
+    isWeekday: true,
     // 礼品管理
     gifts: [],
     showAddGift: false,
@@ -46,7 +50,9 @@ Page({
       todayDisplay: util.formatDate(today),
       dailyData: dailyData,
       taskProgress: taskProgress,
-      presetTasks: util.getPresetTasks(),
+      weekdayPresets: util.getWeekdayPresets(),
+      weekendPresets: util.getWeekendPresets(),
+      isWeekday: util.isWeekday(),
       gifts: util.getGifts(),
       redemptions: util.getRedemptions(),
       bookLibrary: this._buildBookList(),
@@ -87,48 +93,77 @@ Page({
     this.refreshData();
   },
 
-  // ========== 预设任务管理 ==========
-  onPresetTaskInput(e) {
-    this.setData({ newPresetTask: e.detail.value });
+  // ========== 预设任务管理（双模板） ==========
+  switchTaskTab(e) {
+    this.setData({ taskTab: e.currentTarget.dataset.tab });
   },
 
-  addPresetTask() {
-    const name = this.data.newPresetTask.trim();
-    if (!name) {
-      wx.showToast({ title: '请输入任务名称', icon: 'none' });
-      return;
-    }
-    const tasks = this.data.presetTasks;
-    if (tasks.includes(name)) {
-      wx.showToast({ title: '任务已存在', icon: 'none' });
-      return;
-    }
+  onWeekdayTaskInput(e) {
+    this.setData({ newWeekdayTask: e.detail.value });
+  },
+
+  onWeekendTaskInput(e) {
+    this.setData({ newWeekendTask: e.detail.value });
+  },
+
+  addWeekdayTask() {
+    const name = this.data.newWeekdayTask.trim();
+    if (!name) { wx.showToast({ title: '请输入任务名称', icon: 'none' }); return; }
+    const tasks = this.data.weekdayPresets;
+    if (tasks.includes(name)) { wx.showToast({ title: '任务已存在', icon: 'none' }); return; }
     tasks.push(name);
-    util.savePresetTasks(tasks);
-    this.setData({ presetTasks: tasks, newPresetTask: '' });
+    util.saveWeekdayPresets(tasks);
+    this.setData({ weekdayPresets: tasks, newWeekdayTask: '' });
     wx.showToast({ title: '已添加', icon: 'success' });
   },
 
-  deletePresetTask(e) {
+  addWeekendTask() {
+    const name = this.data.newWeekendTask.trim();
+    if (!name) { wx.showToast({ title: '请输入任务名称', icon: 'none' }); return; }
+    const tasks = this.data.weekendPresets;
+    if (tasks.includes(name)) { wx.showToast({ title: '任务已存在', icon: 'none' }); return; }
+    tasks.push(name);
+    util.saveWeekendPresets(tasks);
+    this.setData({ weekendPresets: tasks, newWeekendTask: '' });
+    wx.showToast({ title: '已添加', icon: 'success' });
+  },
+
+  deleteWeekdayTask(e) {
     const index = e.currentTarget.dataset.index;
-    const tasks = this.data.presetTasks;
+    const tasks = this.data.weekdayPresets;
     wx.showModal({
       title: '确认删除',
       content: `确定删除"${tasks[index]}"吗？`,
       success: (res) => {
         if (res.confirm) {
           tasks.splice(index, 1);
-          util.savePresetTasks(tasks);
-          this.setData({ presetTasks: tasks });
+          util.saveWeekdayPresets(tasks);
+          this.setData({ weekdayPresets: tasks });
         }
       }
     });
   },
 
-  // 将预设任务应用到今天
+  deleteWeekendTask(e) {
+    const index = e.currentTarget.dataset.index;
+    const tasks = this.data.weekendPresets;
+    wx.showModal({
+      title: '确认删除',
+      content: `确定删除"${tasks[index]}"吗？`,
+      success: (res) => {
+        if (res.confirm) {
+          tasks.splice(index, 1);
+          util.saveWeekendPresets(tasks);
+          this.setData({ weekendPresets: tasks });
+        }
+      }
+    });
+  },
+
   applyPresetToToday() {
-    if (this.data.presetTasks.length === 0) {
-      wx.showToast({ title: '没有预设任务', icon: 'none' });
+    const presets = util.getPresetTasks();
+    if (presets.length === 0) {
+      wx.showToast({ title: '当前模板没有预设任务', icon: 'none' });
       return;
     }
     const dailyData = util.getDailyData();
@@ -140,9 +175,10 @@ Page({
       wx.showToast({ title: '已有任务打卡，无法覆盖', icon: 'none' });
       return;
     }
+    const label = this.data.isWeekday ? '工作日' : '周末';
     wx.showModal({
       title: '确认',
-      content: '将预设任务设为今日作业？（会覆盖已设置的任务）',
+      content: `将${label}模板设为今日作业？（会覆盖已设置的任务）`,
       success: (res) => {
         if (res.confirm) {
           util.loadPresetToToday();

@@ -102,7 +102,7 @@ async function syncFromCloud() {
 /** 将本地所有关键数据上传到云端 */
 async function syncToCloud() {
   if (!cloudReady) return;
-  const keys = ['settings', 'stars', 'gifts', 'redemptions', 'presetTasks', 'customRecommendations', 'checklist'];
+  const keys = ['settings', 'stars', 'gifts', 'redemptions', 'presetTasks', 'weekdayPresets', 'weekendPresets', 'customRecommendations', 'checklist'];
   for (const key of keys) {
     const value = wx.getStorageSync(key);
     if (value) {

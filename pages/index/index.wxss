@@ -278,7 +278,7 @@
 
 .task-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 20rpx 0;
   border-bottom: 1rpx solid #F0F0F0;
@@ -294,7 +294,7 @@
 
 .task-left {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex: 1;
   min-width: 0;
 }
@@ -307,6 +307,7 @@
   justify-content: center;
   font-size: 32rpx;
   margin-right: 16rpx;
+  margin-top: 2rpx;
   flex-shrink: 0;
 }
 
@@ -323,9 +324,8 @@
 .task-title {
   font-size: 30rpx;
   color: #333;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
+  white-space: normal;
 }
 
 .task-title.line-through {
