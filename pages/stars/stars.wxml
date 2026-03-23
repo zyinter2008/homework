@@ -34,6 +34,11 @@
         <text class="rule-stars">+1⭐</text>
       </view>
       <view class="rule-item">
+        <text class="rule-icon">🎒</text>
+        <text class="rule-text">书包整理完成</text>
+        <text class="rule-stars">+1⭐</text>
+      </view>
+      <view class="rule-item">
         <text class="rule-icon">👨‍👩‍👧</text>
         <text class="rule-text">家长评价完成质量</text>
         <text class="rule-stars">±1⭐</text>

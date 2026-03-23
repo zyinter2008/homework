@@ -1,4 +1,22 @@
 <view class="container">
+  <!-- 书包整理完成庆祝弹层 -->
+  <view class="celebration-mask {{showCelebration ? 'show' : ''}}" wx:if="{{showCelebration}}" catchtap="onCelebrationTap">
+    <view
+      wx:for="{{celebrationStars}}"
+      wx:key="id"
+      class="floating-star"
+      style="left: {{item.left}}%; animation-delay: {{item.delay}}ms; font-size: {{item.size}}rpx;"
+    >{{item.emoji}}</view>
+
+    <view class="celebration-card" catchtap="onCelebrationTap">
+      <view class="celebration-emoji">🎒</view>
+      <view class="celebration-text">书包整理得真棒！</view>
+      <view class="celebration-sub" wx:if="{{celebrationEarnedStar}}">整理完成 +1⭐</view>
+      <view class="celebration-sub-done" wx:else>⭐ 今日整理星星已获得</view>
+      <view class="celebration-hint">点击任意处关闭</view>
+    </view>
+  </view>
+
   <!-- 顶部提醒卡片 -->
   <view class="header-card card">
     <view class="header-emoji">🎒</view>
@@ -8,58 +26,72 @@
       <text class="header-title" wx:else>检查一下明天要带的东西</text>
       <text class="header-sub" wx:if="{{totalCount > 0 && !allPacked}}">还有 {{uncheckedCount}} 样东西没有装好</text>
       <text class="header-sub" wx:if="{{allPacked}}">所有东西都准备好了，早点休息吧</text>
-      <text class="header-sub" wx:if="{{totalCount === 0}}">添加明天需要带去学校的物品</text>
+      <text class="header-sub" wx:if="{{totalCount === 0}}">从下面快速添加物品吧</text>
     </view>
   </view>
 
-  <!-- 待整理区域 -->
-  <view class="card" wx:if="{{uncheckedItems.length > 0}}">
-    <view class="section-title">
-      <text class="section-icon">📋</text>
-      <text>还没装 ({{uncheckedItems.length}})</text>
+  <!-- 全局操作栏 -->
+  <view class="global-action-bar" wx:if="{{packedCount > 0 && !allPacked}}">
+    <view class="global-unpack-btn" bindtap="onUnpackAll">↩️ 全部取出，重新整理</view>
+  </view>
+
+  <!-- 新一天提示卡 -->
+  <view class="new-day-card card" wx:if="{{showNewDayHint}}">
+    <view class="new-day-icon">🌅</view>
+    <view class="new-day-content">
+      <text class="new-day-title">新的一天！</text>
+      <text class="new-day-desc">昨天的物品清单已保留，勾选已自动重置。\n请根据明天的课程调整物品，然后重新装包吧！</text>
     </view>
-    <view class="item-list">
-      <view
-        wx:for="{{uncheckedItems}}"
-        wx:key="id"
-        class="item-row"
-        bindtap="onToggleItem"
-        data-id="{{item.id}}"
-      >
-        <view class="item-left">
-          <view class="item-checkbox">
-            <text class="check-placeholder">○</text>
+    <view class="new-day-close" bindtap="dismissNewDayHint">知道了</view>
+  </view>
+
+  <!-- 按分类显示物品 -->
+  <view
+    wx:for="{{categoryGroups}}"
+    wx:key="category"
+    wx:for-item="group"
+    class="card category-card"
+    style="border-left: 8rpx solid {{group.color}}"
+  >
+    <view class="category-header">
+      <view class="category-left">
+        <text class="category-icon">{{group.icon}}</text>
+        <text class="category-name">{{group.category}}</text>
+      </view>
+      <view class="category-right">
+        <view class="cat-progress-wrap">
+          <view class="cat-bar-bg">
+            <view class="cat-bar-fill" style="width:{{group.percent}}%; background:{{group.color}}"></view>
           </view>
-          <text class="item-name">{{item.name}}</text>
-        </view>
-        <view class="item-actions">
-          <view class="pack-hint">点击装好</view>
-          <view class="item-delete" catchtap="onDeleteItem" data-id="{{item.id}}">✕</view>
+          <text class="cat-progress-text" wx:if="{{group.uncheckedCount > 0}}">{{group.checkedCount}}/{{group.totalCount}}</text>
+          <text class="cat-done-text" wx:else>✅ 齐了</text>
         </view>
       </view>
     </view>
-  </view>
-
-  <!-- 已装好区域 -->
-  <view class="card" wx:if="{{checkedItems.length > 0}}">
-    <view class="section-title done-section">
-      <text class="section-icon">✅</text>
-      <text>已装好 ({{checkedItems.length}})</text>
+    <view class="category-actions">
+      <view class="cat-action-btn pack-all" wx:if="{{group.uncheckedCount > 0}}" catchtap="onPackAllInCategory" data-category="{{group.category}}">✅ 全部装好</view>
+      <view class="cat-action-btn unpack-all" wx:if="{{group.checkedCount > 0}}" catchtap="onUnpackAllInCategory" data-category="{{group.category}}">↩️ 全部取出</view>
     </view>
-    <view class="item-list">
+
+    <view class="category-items">
       <view
-        wx:for="{{checkedItems}}"
+        wx:for="{{group.items}}"
+        wx:for-item="ci"
         wx:key="id"
-        class="item-row checked"
+        class="item-row {{ci.checked ? 'checked' : ''}}"
       >
-        <view class="item-left" bindtap="onToggleItem" data-id="{{item.id}}">
-          <view class="item-checkbox done">
-            <text>✓</text>
+        <view class="item-left" bindtap="onToggleItem" data-id="{{ci.id}}">
+          <view class="item-checkbox {{ci.checked ? 'done' : ''}}">
+            <text wx:if="{{ci.checked}}">✓</text>
+            <text wx:else class="check-placeholder">○</text>
           </view>
-          <text class="item-name line-through">{{item.name}}</text>
+          <text class="item-icon" wx:if="{{ci.icon}}">{{ci.icon}}</text>
+          <text class="item-name {{ci.checked ? 'line-through' : ''}}">{{ci.name}}</text>
         </view>
         <view class="item-actions">
-          <view class="undo-pack-btn" bindtap="onToggleItem" data-id="{{item.id}}">取出</view>
+          <view wx:if="{{!ci.checked}}" class="pack-hint" bindtap="onToggleItem" data-id="{{ci.id}}">装好</view>
+          <view wx:else class="undo-pack-btn" catchtap="onToggleItem" data-id="{{ci.id}}">取出</view>
+          <view class="item-delete" catchtap="onDeleteItem" data-id="{{ci.id}}">✕</view>
         </view>
       </view>
     </view>
@@ -70,14 +102,18 @@
     <view class="all-packed-emoji">🌟</view>
     <text class="all-packed-text">太棒了！书包整理得很好！</text>
     <text class="all-packed-hint">明天的东西都准备齐了</text>
-
-    <!-- 推荐阅读引导 -->
+    <view class="star-reward-tag" wx:if="{{checklistStarEarned}}">⭐ 已获得1颗星星</view>
     <view wx:if="{{canShowRecommend && !recommendCompleted}}" class="next-step-btn" bindtap="goRecommend">
       <text>📚 接下来去看推荐阅读，再得1颗星 →</text>
     </view>
     <view wx:if="{{recommendCompleted}}" class="next-step-done">
       <text>📚 推荐阅读已完成 ✅</text>
     </view>
+    <view class="repack-hint">
+      <text>📌 明天放学回来后，物品清单会自动保留，</text>
+      <text>勾选重置后就可以重新整理啦！</text>
+    </view>
+    <view class="global-unpack-btn repack-btn" bindtap="onUnpackAll">↩️ 全部取出，重新整理</view>
   </view>
 
   <!-- 空状态 -->
@@ -85,7 +121,7 @@
     <view class="empty-state">
       <view class="icon">🎒</view>
       <text class="empty-main">清单是空的</text>
-      <text class="empty-hint">从下面的常用物品中快速添加吧</text>
+      <text class="empty-hint">从下面快速添加物品吧</text>
     </view>
   </view>
 
@@ -100,21 +136,56 @@
     </view>
 
     <view wx:if="{{showQuickAdd}}" class="quick-add-area">
-      <view wx:for="{{quickAddGroups}}" wx:key="label" class="quick-group">
-        <text class="quick-group-label">{{item.label}}</text>
+      <!-- 一键添加推荐配置 -->
+      <view class="preset-card" bindtap="onAddPreset">
+        <view class="preset-left">
+          <text class="preset-icon">🎯</text>
+          <view class="preset-text">
+            <text class="preset-title">一键添加推荐配置</text>
+            <text class="preset-desc">按标准配置添加全部物品到对应书袋</text>
+          </view>
+        </view>
+        <text class="preset-arrow">→</text>
+      </view>
+
+      <!-- 分隔线 -->
+      <view class="quick-divider">
+        <view class="divider-line"></view>
+        <text class="divider-text">或自由添加</text>
+        <view class="divider-line"></view>
+      </view>
+
+      <!-- 选择目标书袋 -->
+      <view class="target-section">
+        <text class="target-label">放入：</text>
+        <view class="target-tabs">
+          <view
+            wx:for="{{categoryTabs}}"
+            wx:key="name"
+            class="target-tab {{quickAddCategory === item.name ? 'active' : ''}}"
+            style="{{quickAddCategory === item.name ? 'background:' + item.color + '; color:#fff; border-color:' + item.color + ';' : ''}}"
+            bindtap="onSwitchQuickCategory"
+            data-category="{{item.name}}"
+          >{{item.icon}} {{item.name}}</view>
+        </view>
+      </view>
+
+      <!-- 物品池 -->
+      <view wx:for="{{quickAddItems}}" wx:key="label" wx:for-item="group" class="quick-group">
+        <text class="quick-group-label">{{group.label}}</text>
         <view class="quick-tags">
           <view
-            wx:for="{{item.items}}"
+            wx:for="{{group.items}}"
             wx:for-item="tag"
             wx:key="name"
-            class="quick-tag {{existingMap[tag.name] ? 'added' : ''}}"
+            class="quick-tag {{tag.added ? 'added' : ''}}"
             bindtap="onQuickAdd"
             data-name="{{tag.name}}"
             data-icon="{{tag.icon}}"
           >
             <text class="tag-icon">{{tag.icon}}</text>
             <text>{{tag.name}}</text>
-            <text wx:if="{{existingMap[tag.name]}}" class="tag-check"> ✓</text>
+            <text wx:if="{{tag.added}}" class="tag-check"> ✓</text>
           </view>
         </view>
       </view>
@@ -127,9 +198,14 @@
       <text>✏️ 手动添加其他物品</text>
     </view>
     <view class="add-item-form" wx:if="{{showAddItem}}">
+      <view class="form-row">
+        <picker mode="selector" range="{{categoryNames}}" value="{{newItemCategoryIdx}}" bindchange="onCategoryPick" class="category-picker-wrap">
+          <view class="category-picker">📂 分类：{{categoryNames[newItemCategoryIdx]}} ▾</view>
+        </picker>
+      </view>
       <input
         class="item-input"
-        placeholder="输入物品名称，如：画画工具"
+        placeholder="输入物品名称"
         value="{{newItemName}}"
         bindinput="onItemNameInput"
         confirm-type="done"
@@ -145,6 +221,9 @@
 
   <!-- 底部提示 -->
   <view class="footer-hint">
-    <text>💡 每天的勾选会自动重置，物品列表会保留</text>
+    <text>👕 别忘了找好明天要穿的衣服和袜子哦！</text>
+  </view>
+  <view class="footer-hint footer-hint-sub">
+    <text>💡 每天上午9点自动重置勾选，物品列表会保留</text>
   </view>
 </view>

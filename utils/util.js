@@ -59,9 +59,12 @@ function detectVideoLinkType(url) {
 
 // ========== 日期时间工具 ==========
 
-/** 获取今天日期 YYYY-MM-DD */
+/** 获取今天日期 YYYY-MM-DD（每天上午9点重置，9点前仍算前一天） */
 function getToday() {
   const d = new Date();
+  if (d.getHours() < 9) {
+    d.setDate(d.getDate() - 1);
+  }
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
@@ -108,7 +111,8 @@ const DEFAULT_WEEKEND_TASKS = [
 ];
 
 function isWeekday(dateStr) {
-  const d = dateStr ? new Date(dateStr.replace(/-/g, '/')) : new Date();
+  dateStr = dateStr || getToday();
+  const d = new Date(dateStr.replace(/-/g, '/'));
   const day = d.getDay();
   return day >= 1 && day <= 5;
 }
@@ -166,7 +170,8 @@ function getDailyData(date) {
       starsEarned: {
         allBonus: false,
         recommend: false,
-        parentReview: 0
+        parentReview: 0,
+        checklist: false
       }
     };
   }
@@ -488,6 +493,17 @@ function completeRecommendation(date) {
   return false;
 }
 
+/** 书包整理完成，奖励星星（每天仅一次） */
+function completeChecklist(date) {
+  date = date || getToday();
+  const data = getDailyData(date);
+  if (data.starsEarned.checklist) return false;
+  data.starsEarned.checklist = true;
+  saveDailyData(date, data);
+  addStarRecord(1, '书包整理完成奖励', date);
+  return true;
+}
+
 // ========== 家长评价 ==========
 
 /** 家长评价作业质量 */
@@ -638,11 +654,14 @@ function saveChecklist(list) {
   syncSet('checklist', list);
 }
 
-function addChecklistItem(name) {
+function addChecklistItem(name, category, icon) {
   const list = getChecklist();
-  const exists = list.some(i => i.name === name);
+  category = category || '其他';
+  const exists = list.some(i => i.name === name && (i.category || '其他') === category);
   if (exists) return list;
-  list.push({ id: Date.now(), name: name, checked: false });
+  var item = { id: Date.now(), name: name, category: category, checked: false };
+  if (icon) item.icon = icon;
+  list.push(item);
   saveChecklist(list);
   return list;
 }
@@ -722,6 +741,7 @@ module.exports = {
   getTodayRecommendations,
   clearTodayRecommendCache,
   completeRecommendation,
+  completeChecklist,
   parentReview,
   getGifts,
   saveGifts,
