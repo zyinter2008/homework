@@ -1,4 +1,5 @@
 const cloud = require('./utils/cloud.js');
+const util = require('./utils/util.js');
 
 App({
   async onLaunch() {
@@ -12,6 +13,9 @@ App({
 
     // 初始化默认数据（仅首次使用时生效）
     this.initDefaults();
+
+    // 校验星星总数与历史记录是否一致，自动修复
+    util.recalcStars();
   },
 
   initDefaults() {

@@ -171,9 +171,25 @@ function getDailyData(date) {
         allBonus: false,
         recommend: false,
         parentReview: 0,
-        checklist: false
+        checklist: false,
+        tasks: {}
       }
     };
+  }
+  // 旧数据兼容：确保 starsEarned 字段完整
+  if (!data.starsEarned) data.starsEarned = {};
+  if (data.starsEarned.allBonus === undefined) data.starsEarned.allBonus = false;
+  if (data.starsEarned.recommend === undefined) data.starsEarned.recommend = false;
+  if (data.starsEarned.parentReview === undefined) data.starsEarned.parentReview = 0;
+  if (data.starsEarned.checklist === undefined) data.starsEarned.checklist = false;
+  if (!data.starsEarned.tasks) {
+    data.starsEarned.tasks = {};
+    // 从已完成的任务回填追踪记录
+    if (data.tasks && data.tasks.length > 0) {
+      data.tasks.forEach(t => {
+        if (t.completed) data.starsEarned.tasks[t.id] = true;
+      });
+    }
   }
   return data;
 }
@@ -187,11 +203,28 @@ function saveDailyData(date, data) {
 function setTodayTasks(taskNames) {
   const today = getToday();
   const data = getDailyData(today);
+
+  // 如有已打卡的任务，先把对应星星扣回
+  if (data.starsEarned.allBonus) {
+    addStarRecord(-3, '任务变更：撤销全部完成奖励', today);
+  }
+  let oldTaskStars = 0;
+  for (const tid in data.starsEarned.tasks) {
+    if (data.starsEarned.tasks[tid]) oldTaskStars++;
+  }
+  if (oldTaskStars > 0) {
+    addStarRecord(-oldTaskStars, '任务变更：撤销已打卡任务星星×' + oldTaskStars, today);
+  }
+
   data.tasks = taskNames.map((name, idx) => ({
     id: idx + 1,
     title: name,
     completed: false
   }));
+  data.starsEarned.tasks = {};
+  data.starsEarned.allBonus = false;
+  data.checkedIn = false;
+  data.checkedInTime = null;
   saveDailyData(today, data);
   return data;
 }
@@ -214,15 +247,27 @@ function checkInTask(date, taskId) {
   if (task.completed) return { success: false, message: '该任务已打卡' };
 
   task.completed = true;
-  addStarRecord(1, '完成作业：' + task.title, date);
+
+  // 按任务追踪星星，防止重复奖励
+  let taskStarAwarded = false;
+  if (!data.starsEarned.tasks[taskId]) {
+    data.starsEarned.tasks[taskId] = true;
+    addStarRecord(1, '完成作业：' + task.title, date);
+    taskStarAwarded = true;
+  }
 
   const allDone = data.tasks.length > 0 && data.tasks.every(t => t.completed);
+  let bonusStars = 0;
 
   if (allDone) {
     data.checkedIn = true;
     data.checkedInTime = getCurrentTime();
-    data.starsEarned.allBonus = true;
-    addStarRecord(3, '全部作业打卡完成奖励', date);
+
+    if (!data.starsEarned.allBonus) {
+      data.starsEarned.allBonus = true;
+      addStarRecord(3, '全部作业打卡完成奖励', date);
+      bonusStars = 3;
+    }
 
     if (getCurrentTime() < '21:00') {
       data.recommendShown = true;
@@ -235,8 +280,8 @@ function checkInTask(date, taskId) {
     success: true,
     taskTitle: task.title,
     allDone: allDone,
-    starsEarned: 1,
-    bonusStars: allDone ? 3 : 0,
+    starsEarned: taskStarAwarded ? 1 : 0,
+    bonusStars: bonusStars,
     canShowRecommend: allDone && data.recommendShown
   };
 }
@@ -249,7 +294,7 @@ function undoCheckInTask(date, taskId) {
   if (!task) return { success: false, message: '任务不存在' };
   if (!task.completed) return { success: false, message: '该任务未打卡' };
 
-  // 如果全部完成奖励已发放，先撤销奖励
+  // 如果全部完成奖励已发放，先撤销
   const hadAllBonus = data.starsEarned.allBonus;
   if (hadAllBonus) {
     data.checkedIn = false;
@@ -263,14 +308,21 @@ function undoCheckInTask(date, taskId) {
   }
 
   task.completed = false;
-  addStarRecord(-1, '撤销打卡：' + task.title, date);
+
+  // 按任务撤销星星
+  const hadTaskStar = !!data.starsEarned.tasks[taskId];
+  if (hadTaskStar) {
+    data.starsEarned.tasks[taskId] = false;
+    addStarRecord(-1, '撤销打卡：' + task.title, date);
+  }
 
   saveDailyData(date, data);
 
   return {
     success: true,
     taskTitle: task.title,
-    undoneBonus: hadAllBonus
+    undoneBonus: hadAllBonus,
+    undoneTaskStar: hadTaskStar
   };
 }
 
@@ -296,6 +348,18 @@ function addStarRecord(amount, reason, date) {
 
 function getTotalStars() {
   return getStars().total;
+}
+
+/** 根据历史记录重新计算星星总数（修复不一致时使用） */
+function recalcStars() {
+  const stars = getStars();
+  const recalc = stars.history.reduce((sum, r) => sum + (r.amount || 0), 0);
+  if (recalc !== stars.total) {
+    console.log('[Stars] 修正星星总数：' + stars.total + ' -> ' + Math.max(0, recalc));
+    stars.total = Math.max(0, recalc);
+    syncSet('stars', stars);
+  }
+  return stars.total;
 }
 
 function getStarHistory() {
@@ -720,6 +784,7 @@ module.exports = {
   getStars,
   addStarRecord,
   getTotalStars,
+  recalcStars,
   getStarHistory,
   getChecklist,
   saveChecklist,

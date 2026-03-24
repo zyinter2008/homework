@@ -106,13 +106,16 @@ Page({
     return stars;
   },
 
-  _showTaskCelebration(taskTitle) {
+  _showTaskCelebration(taskTitle, starsEarned) {
+    const sub = starsEarned > 0
+      ? taskTitle + '  +1⭐'
+      : taskTitle + '  ⭐已获得';
     this.setData({
       showCelebration: true,
       celebrationType: 'task',
       celebrationEmoji: randomPick(CHEER_EMOJIS),
       celebrationText: randomPick(CHEERS),
-      celebrationSub: taskTitle + '  +1⭐',
+      celebrationSub: sub,
       celebrationStars: this._buildFloatingStars(8)
     });
     this._autoDismissCelebration = setTimeout(() => {
@@ -120,13 +123,16 @@ Page({
     }, 5000);
   },
 
-  _showAllDoneCelebration() {
+  _showAllDoneCelebration(bonusStars) {
+    const sub = bonusStars > 0
+      ? '额外奖励 +' + bonusStars + '⭐'
+      : '⭐ 全部完成奖励已获得';
     this.setData({
       showCelebration: true,
       celebrationType: 'allDone',
       celebrationEmoji: randomPick(ALL_DONE_EMOJIS),
       celebrationText: randomPick(ALL_DONE_CHEERS),
-      celebrationSub: '额外奖励 +3⭐',
+      celebrationSub: sub,
       celebrationStars: this._buildFloatingStars(16)
     });
   },
@@ -168,9 +174,9 @@ Page({
     this.refreshData();
 
     if (result.allDone) {
-      this._showAllDoneCelebration();
+      this._showAllDoneCelebration(result.bonusStars);
     } else {
-      this._showTaskCelebration(result.taskTitle);
+      this._showTaskCelebration(result.taskTitle, result.starsEarned);
     }
   },
 
@@ -191,10 +197,9 @@ Page({
             return;
           }
           this.refreshData();
-          let msg = '「' + result.taskTitle + '」已撤销 -1⭐';
-          if (result.undoneBonus) {
-            msg = '「' + result.taskTitle + '」已撤销 -1⭐\n全部完成奖励也已扣除 -3⭐';
-          }
+          const taskPart = result.undoneTaskStar ? ' -1⭐' : '';
+          const bonusPart = result.undoneBonus ? '\n全部完成奖励也已扣除 -3⭐' : '';
+          const msg = '「' + result.taskTitle + '」已撤销' + taskPart + bonusPart;
           wx.showToast({ title: msg, icon: 'none', duration: 2000 });
         }
       }
