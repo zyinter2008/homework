@@ -287,6 +287,14 @@ Page({
       }
       this._showPackCelebration(justEarnedStar);
     }
+
+    // 从全部装好变为未完成时，撤销星星
+    if (!allPacked && this.data.allPacked && checklistStarEarned) {
+      var revoked = util.undoCompleteChecklist(today);
+      if (revoked) {
+        checklistStarEarned = false;
+      }
+    }
     this._isUserAction = false;
 
     this.setData({

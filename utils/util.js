@@ -568,6 +568,17 @@ function completeChecklist(date) {
   return true;
 }
 
+/** 书包物品取出后，撤销整理星星 */
+function undoCompleteChecklist(date) {
+  date = date || getToday();
+  const data = getDailyData(date);
+  if (!data.starsEarned.checklist) return false;
+  data.starsEarned.checklist = false;
+  saveDailyData(date, data);
+  addStarRecord(-1, '书包物品取出：撤销整理奖励', date);
+  return true;
+}
+
 // ========== 家长评价 ==========
 
 /** 家长评价作业质量 */
@@ -807,6 +818,7 @@ module.exports = {
   clearTodayRecommendCache,
   completeRecommendation,
   completeChecklist,
+  undoCompleteChecklist,
   parentReview,
   getGifts,
   saveGifts,
